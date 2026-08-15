@@ -1,0 +1,33 @@
+[
+  {
+    "code": "P1001",
+    "severity": "Error",
+    "filename": "partial/assertion_outside_whitelist.py",
+    "span": {
+      "start_line": 6,
+      "start_utf8_byte": 4,
+      "end_line": 6,
+      "end_utf8_byte": 32
+    },
+    "function": "invalid",
+    "message": "Function invalid contains undeclared partial behavior raise:builtins.AssertionError",
+    "trace": [
+      "invalid",
+      "raise:builtins.AssertionError"
+    ],
+    "effect_trace": [
+      {
+        "function": "invalid",
+        "filename": "partial/assertion_outside_whitelist.py",
+        "span": {
+          "start_line": 6,
+          "start_utf8_byte": 4,
+          "end_line": 6,
+          "end_utf8_byte": 32
+        },
+        "operation": "Assert condition"
+      }
+    ],
+    "suggestion": "Declare @efct.pure(efct.partial.Raise(...)) or remove the partial operation raise:builtins.AssertionError"
+  }
+]

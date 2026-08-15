@@ -1,0 +1,32 @@
+[
+  {
+    "code": "P1301",
+    "severity": "Error",
+    "filename": "network/tls_context.py",
+    "span": {
+      "start_line": 2,
+      "start_utf8_byte": 0,
+      "end_line": 2,
+      "end_utf8_byte": 10
+    },
+    "function": null,
+    "message": "Imported module ssl is not certified by the MVP",
+    "trace": [],
+    "suggestion": null
+  },
+  {
+    "code": "P1004",
+    "severity": "Error",
+    "filename": "network/tls_context.py",
+    "span": {
+      "start_line": 7,
+      "start_utf8_byte": 4,
+      "end_line": 7,
+      "end_utf8_byte": 7
+    },
+    "function": "create_context",
+    "message": "Value name ssl cannot be resolved",
+    "trace": [],
+    "suggestion": null
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "code": "P1104",
+    "severity": "Error",
+    "filename": "io/dynamic_open_mode.py",
+    "span": {
+      "start_line": 7,
+      "start_utf8_byte": 4,
+      "end_line": 7,
+      "end_utf8_byte": 23
+    },
+    "function": "read_file",
+    "message": "The file mode must be a static string literal",
+    "trace": [],
+    "suggestion": null
+  }
+]

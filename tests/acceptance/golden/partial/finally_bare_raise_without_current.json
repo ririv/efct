@@ -1,0 +1,33 @@
+[
+  {
+    "code": "P1001",
+    "severity": "Error",
+    "filename": "partial/finally_bare_raise_without_current.py",
+    "span": {
+      "start_line": 9,
+      "start_utf8_byte": 8,
+      "end_line": 9,
+      "end_utf8_byte": 13
+    },
+    "function": "invalid",
+    "message": "Function invalid contains undeclared partial behavior raise:builtins.RuntimeError",
+    "trace": [
+      "invalid",
+      "raise:builtins.RuntimeError"
+    ],
+    "effect_trace": [
+      {
+        "function": "invalid",
+        "filename": "partial/finally_bare_raise_without_current.py",
+        "span": {
+          "start_line": 9,
+          "start_utf8_byte": 8,
+          "end_line": 9,
+          "end_utf8_byte": 13
+        },
+        "operation": "Raise builtins.RuntimeError because no exception is active"
+      }
+    ],
+    "suggestion": "Declare @efct.pure(efct.partial.Raise(...)) or remove the partial operation raise:builtins.RuntimeError"
+  }
+]

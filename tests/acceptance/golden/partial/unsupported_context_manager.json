@@ -1,0 +1,17 @@
+[
+  {
+    "code": "P1401",
+    "severity": "Error",
+    "filename": "partial/unsupported_context_manager.py",
+    "span": {
+      "start_line": 6,
+      "start_utf8_byte": 9,
+      "end_line": 6,
+      "end_utf8_byte": 19
+    },
+    "function": "invalid",
+    "message": "Only contextlib.suppress is supported as a context manager",
+    "trace": [],
+    "suggestion": null
+  }
+]

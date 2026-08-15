@@ -1,0 +1,33 @@
+[
+  {
+    "code": "P1001",
+    "severity": "Error",
+    "filename": "partial/implicit_key_error.py",
+    "span": {
+      "start_line": 6,
+      "start_utf8_byte": 11,
+      "end_line": 6,
+      "end_utf8_byte": 23
+    },
+    "function": "item",
+    "message": "Function item contains undeclared partial behavior raise:builtins.KeyError",
+    "trace": [
+      "item",
+      "raise:builtins.KeyError"
+    ],
+    "effect_trace": [
+      {
+        "function": "item",
+        "filename": "partial/implicit_key_error.py",
+        "span": {
+          "start_line": 6,
+          "start_utf8_byte": 11,
+          "end_line": 6,
+          "end_utf8_byte": 23
+        },
+        "operation": "Index FrozenMap"
+      }
+    ],
+    "suggestion": "Declare @efct.pure(efct.partial.Raise(...)) or remove the partial operation raise:builtins.KeyError"
+  }
+]

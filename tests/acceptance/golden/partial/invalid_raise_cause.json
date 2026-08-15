@@ -1,0 +1,17 @@
+[
+  {
+    "code": "P1104",
+    "severity": "Error",
+    "filename": "partial/invalid_raise_cause.py",
+    "span": {
+      "start_line": 6,
+      "start_utf8_byte": 4,
+      "end_line": 6,
+      "end_utf8_byte": 38
+    },
+    "function": "invalid",
+    "message": "The raise cause must be a registered exception or None",
+    "trace": [],
+    "suggestion": null
+  }
+]

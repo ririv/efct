@@ -1,0 +1,32 @@
+[
+  {
+    "code": "P1301",
+    "severity": "Error",
+    "filename": "network/socket_symbol.py",
+    "span": {
+      "start_line": 1,
+      "start_utf8_byte": 0,
+      "end_line": 1,
+      "end_utf8_byte": 36
+    },
+    "function": null,
+    "message": "Imported symbol socket.create_connection is not certified by the MVP",
+    "trace": [],
+    "suggestion": null
+  },
+  {
+    "code": "P1004",
+    "severity": "Error",
+    "filename": "network/socket_symbol.py",
+    "span": {
+      "start_line": 8,
+      "start_utf8_byte": 4,
+      "end_line": 8,
+      "end_utf8_byte": 34
+    },
+    "function": "connect",
+    "message": "Call target create_connection is not registered",
+    "trace": [],
+    "suggestion": null
+  }
+]

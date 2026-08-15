@@ -1,0 +1,33 @@
+[
+  {
+    "code": "P1001",
+    "severity": "Error",
+    "filename": "nondeterminism/system_random.py",
+    "span": {
+      "start_line": 7,
+      "start_utf8_byte": 4,
+      "end_line": 7,
+      "end_utf8_byte": 18
+    },
+    "function": "random_bytes",
+    "message": "Function random_bytes contains undeclared effect random",
+    "trace": [
+      "random_bytes",
+      "random"
+    ],
+    "effect_trace": [
+      {
+        "function": "random_bytes",
+        "filename": "nondeterminism/system_random.py",
+        "span": {
+          "start_line": 7,
+          "start_utf8_byte": 4,
+          "end_line": 7,
+          "end_utf8_byte": 18
+        },
+        "operation": "Call os.urandom"
+      }
+    ],
+    "suggestion": "Declare @efct.effects(\"random\") or remove the effectful operation"
+  }
+]

@@ -1,0 +1,15 @@
+[package]
+name = "efct-language-python"
+description = "Python language semantics for Efct"
+publish = false
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+efct-engine.workspace = true
+efct-model.workspace = true
+efct-protocol.workspace = true
+efct-project.workspace = true
+serde.workspace = true

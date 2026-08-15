@@ -1,0 +1,33 @@
+[
+  {
+    "code": "P1001",
+    "severity": "Error",
+    "filename": "partial/implicit_index_error.py",
+    "span": {
+      "start_line": 6,
+      "start_utf8_byte": 11,
+      "end_line": 6,
+      "end_utf8_byte": 24
+    },
+    "function": "item",
+    "message": "Function item contains undeclared partial behavior raise:builtins.IndexError",
+    "trace": [
+      "item",
+      "raise:builtins.IndexError"
+    ],
+    "effect_trace": [
+      {
+        "function": "item",
+        "filename": "partial/implicit_index_error.py",
+        "span": {
+          "start_line": 6,
+          "start_utf8_byte": 11,
+          "end_line": 6,
+          "end_utf8_byte": 24
+        },
+        "operation": "Index tuple"
+      }
+    ],
+    "suggestion": "Declare @efct.pure(efct.partial.Raise(...)) or remove the partial operation raise:builtins.IndexError"
+  }
+]

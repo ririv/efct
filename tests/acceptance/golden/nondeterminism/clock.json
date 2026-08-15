@@ -1,0 +1,33 @@
+[
+  {
+    "code": "P1001",
+    "severity": "Error",
+    "filename": "nondeterminism/clock.py",
+    "span": {
+      "start_line": 7,
+      "start_utf8_byte": 11,
+      "end_line": 7,
+      "end_utf8_byte": 25
+    },
+    "function": "now",
+    "message": "Function now contains undeclared effect clock",
+    "trace": [
+      "now",
+      "clock"
+    ],
+    "effect_trace": [
+      {
+        "function": "now",
+        "filename": "nondeterminism/clock.py",
+        "span": {
+          "start_line": 7,
+          "start_utf8_byte": 11,
+          "end_line": 7,
+          "end_utf8_byte": 25
+        },
+        "operation": "Call time.time_ns"
+      }
+    ],
+    "suggestion": "Declare @efct.effects(\"clock\") or remove the effectful operation"
+  }
+]

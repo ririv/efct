@@ -1,0 +1,32 @@
+[
+  {
+    "code": "P1301",
+    "severity": "Error",
+    "filename": "process/thread_start.py",
+    "span": {
+      "start_line": 2,
+      "start_utf8_byte": 0,
+      "end_line": 2,
+      "end_utf8_byte": 16
+    },
+    "function": null,
+    "message": "Imported module threading is not certified by the MVP",
+    "trace": [],
+    "suggestion": null
+  },
+  {
+    "code": "P1004",
+    "severity": "Error",
+    "filename": "process/thread_start.py",
+    "span": {
+      "start_line": 7,
+      "start_utf8_byte": 4,
+      "end_line": 7,
+      "end_utf8_byte": 13
+    },
+    "function": "start_thread",
+    "message": "Value name threading cannot be resolved",
+    "trace": [],
+    "suggestion": null
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "code": "P1201",
+    "severity": "Error",
+    "filename": "partial/invalid_exception_class.py",
+    "span": {
+      "start_line": 4,
+      "start_utf8_byte": 0,
+      "end_line": 5,
+      "end_utf8_byte": 8
+    },
+    "function": null,
+    "message": "Exception base int is not registered",
+    "trace": [],
+    "suggestion": null
+  }
+]

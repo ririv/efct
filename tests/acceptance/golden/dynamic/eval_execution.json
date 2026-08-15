@@ -1,0 +1,17 @@
+[
+  {
+    "code": "P1004",
+    "severity": "Error",
+    "filename": "dynamic/eval_execution.py",
+    "span": {
+      "start_line": 6,
+      "start_utf8_byte": 4,
+      "end_line": 6,
+      "end_utf8_byte": 16
+    },
+    "function": "evaluate",
+    "message": "Call target eval is not registered",
+    "trace": [],
+    "suggestion": null
+  }
+]

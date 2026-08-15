@@ -1,0 +1,33 @@
+[
+  {
+    "code": "P1001",
+    "severity": "Error",
+    "filename": "partial/rethrow_outside_whitelist.py",
+    "span": {
+      "start_line": 9,
+      "start_utf8_byte": 8,
+      "end_line": 9,
+      "end_utf8_byte": 13
+    },
+    "function": "item",
+    "message": "Function item contains undeclared partial behavior raise:builtins.IndexError",
+    "trace": [
+      "item",
+      "raise:builtins.IndexError"
+    ],
+    "effect_trace": [
+      {
+        "function": "item",
+        "filename": "partial/rethrow_outside_whitelist.py",
+        "span": {
+          "start_line": 9,
+          "start_utf8_byte": 8,
+          "end_line": 9,
+          "end_utf8_byte": 13
+        },
+        "operation": "Re-raise builtins.IndexError"
+      }
+    ],
+    "suggestion": "Declare @efct.pure(efct.partial.Raise(...)) or remove the partial operation raise:builtins.IndexError"
+  }
+]

@@ -1,0 +1,33 @@
+[
+  {
+    "code": "P1001",
+    "severity": "Error",
+    "filename": "partial/undeclared_divergence.py",
+    "span": {
+      "start_line": 6,
+      "start_utf8_byte": 4,
+      "end_line": 7,
+      "end_utf8_byte": 12
+    },
+    "function": "wait_forever",
+    "message": "Function wait_forever contains undeclared partial behavior diverge",
+    "trace": [
+      "wait_forever",
+      "diverge"
+    ],
+    "effect_trace": [
+      {
+        "function": "wait_forever",
+        "filename": "partial/undeclared_divergence.py",
+        "span": {
+          "start_line": 6,
+          "start_utf8_byte": 4,
+          "end_line": 7,
+          "end_utf8_byte": 12
+        },
+        "operation": "Repeat while loop"
+      }
+    ],
+    "suggestion": "Declare @efct.pure(efct.partial.Diverge()) or prove that the operation terminates"
+  }
+]

@@ -1,0 +1,33 @@
+[
+  {
+    "code": "P1001",
+    "severity": "Error",
+    "filename": "io/os_file_write.py",
+    "span": {
+      "start_line": 7,
+      "start_utf8_byte": 4,
+      "end_line": 7,
+      "end_utf8_byte": 19
+    },
+    "function": "remove_file",
+    "message": "Function remove_file contains undeclared effect file.write",
+    "trace": [
+      "remove_file",
+      "file.write"
+    ],
+    "effect_trace": [
+      {
+        "function": "remove_file",
+        "filename": "io/os_file_write.py",
+        "span": {
+          "start_line": 7,
+          "start_utf8_byte": 4,
+          "end_line": 7,
+          "end_utf8_byte": 19
+        },
+        "operation": "Call os.remove"
+      }
+    ],
+    "suggestion": "Declare @efct.effects(\"file.write\") or remove the effectful operation"
+  }
+]

@@ -1,0 +1,33 @@
+[
+  {
+    "code": "P1001",
+    "severity": "Error",
+    "filename": "partial/api_exception_outside_whitelist.py",
+    "span": {
+      "start_line": 7,
+      "start_utf8_byte": 11,
+      "end_line": 7,
+      "end_utf8_byte": 36
+    },
+    "function": "sample",
+    "message": "Function sample contains undeclared partial behavior raise:builtins.ValueError",
+    "trace": [
+      "sample",
+      "raise:builtins.ValueError"
+    ],
+    "effect_trace": [
+      {
+        "function": "sample",
+        "filename": "partial/api_exception_outside_whitelist.py",
+        "span": {
+          "start_line": 7,
+          "start_utf8_byte": 11,
+          "end_line": 7,
+          "end_utf8_byte": 36
+        },
+        "operation": "Call random.randint"
+      }
+    ],
+    "suggestion": "Declare @efct.effects(efct.partial.Raise(...)) or remove the partial operation raise:builtins.ValueError"
+  }
+]

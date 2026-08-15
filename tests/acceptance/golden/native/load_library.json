@@ -1,0 +1,32 @@
+[
+  {
+    "code": "P1301",
+    "severity": "Error",
+    "filename": "native/load_library.py",
+    "span": {
+      "start_line": 1,
+      "start_utf8_byte": 0,
+      "end_line": 1,
+      "end_utf8_byte": 13
+    },
+    "function": null,
+    "message": "Imported module ctypes is not certified by the MVP",
+    "trace": [],
+    "suggestion": null
+  },
+  {
+    "code": "P1004",
+    "severity": "Error",
+    "filename": "native/load_library.py",
+    "span": {
+      "start_line": 8,
+      "start_utf8_byte": 4,
+      "end_line": 8,
+      "end_utf8_byte": 10
+    },
+    "function": "load_library",
+    "message": "Value name ctypes cannot be resolved",
+    "trace": [],
+    "suggestion": null
+  }
+]

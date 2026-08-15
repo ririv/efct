@@ -1,0 +1,17 @@
+[
+  {
+    "code": "P1004",
+    "severity": "Error",
+    "filename": "dynamic/dynamic_import.py",
+    "span": {
+      "start_line": 6,
+      "start_utf8_byte": 4,
+      "end_line": 6,
+      "end_utf8_byte": 20
+    },
+    "function": "load_module",
+    "message": "Call target __import__ is not registered",
+    "trace": [],
+    "suggestion": null
+  }
+]

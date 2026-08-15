@@ -1,0 +1,33 @@
+[
+  {
+    "code": "P1001",
+    "severity": "Error",
+    "filename": "nondeterminism/random_number.py",
+    "span": {
+      "start_line": 7,
+      "start_utf8_byte": 11,
+      "end_line": 7,
+      "end_utf8_byte": 33
+    },
+    "function": "random_value",
+    "message": "Function random_value contains undeclared effect random",
+    "trace": [
+      "random_value",
+      "random"
+    ],
+    "effect_trace": [
+      {
+        "function": "random_value",
+        "filename": "nondeterminism/random_number.py",
+        "span": {
+          "start_line": 7,
+          "start_utf8_byte": 11,
+          "end_line": 7,
+          "end_utf8_byte": 33
+        },
+        "operation": "Call random.randint"
+      }
+    ],
+    "suggestion": "Declare @efct.effects(\"random\") or remove the effectful operation"
+  }
+]

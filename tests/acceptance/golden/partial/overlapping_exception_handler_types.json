@@ -1,0 +1,17 @@
+[
+  {
+    "code": "P1401",
+    "severity": "Error",
+    "filename": "partial/overlapping_exception_handler_types.py",
+    "span": {
+      "start_line": 8,
+      "start_utf8_byte": 4,
+      "end_line": 9,
+      "end_utf8_byte": 16
+    },
+    "function": "invalid",
+    "message": "Exception handler types builtins.LookupError and builtins.IndexError overlap by inheritance",
+    "trace": [],
+    "suggestion": null
+  }
+]

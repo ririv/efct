@@ -1,0 +1,17 @@
+[
+  {
+    "code": "P1004",
+    "severity": "Error",
+    "filename": "dynamic/compile_source.py",
+    "span": {
+      "start_line": 6,
+      "start_utf8_byte": 4,
+      "end_line": 6,
+      "end_utf8_byte": 40
+    },
+    "function": "compile_source",
+    "message": "Call target compile is not registered",
+    "trace": [],
+    "suggestion": null
+  }
+]

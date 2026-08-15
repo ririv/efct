@@ -1,0 +1,33 @@
+[
+  {
+    "code": "P1001",
+    "severity": "Error",
+    "filename": "io/file_open.py",
+    "span": {
+      "start_line": 6,
+      "start_utf8_byte": 4,
+      "end_line": 6,
+      "end_utf8_byte": 14
+    },
+    "function": "read_file",
+    "message": "Function read_file contains undeclared effect file.read",
+    "trace": [
+      "read_file",
+      "file.read"
+    ],
+    "effect_trace": [
+      {
+        "function": "read_file",
+        "filename": "io/file_open.py",
+        "span": {
+          "start_line": 6,
+          "start_utf8_byte": 4,
+          "end_line": 6,
+          "end_utf8_byte": 14
+        },
+        "operation": "Call builtins.open"
+      }
+    ],
+    "suggestion": "Declare @efct.effects(\"file.read\") or remove the effectful operation"
+  }
+]

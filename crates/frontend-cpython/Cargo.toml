@@ -1,0 +1,12 @@
+[package]
+name = "efct-frontend-cpython"
+description = "CPython AST frontend for Efct"
+publish = false
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+efct-protocol.workspace = true
+pyo3.workspace = true

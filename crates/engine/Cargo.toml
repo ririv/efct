@@ -1,0 +1,11 @@
+[package]
+name = "efct-engine"
+description = "Language-independent effect and call-graph analysis for Efct"
+publish = false
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+efct-model.workspace = true

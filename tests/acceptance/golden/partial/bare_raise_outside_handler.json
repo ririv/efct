@@ -1,0 +1,17 @@
+[
+  {
+    "code": "P1401",
+    "severity": "Error",
+    "filename": "partial/bare_raise_outside_handler.py",
+    "span": {
+      "start_line": 6,
+      "start_utf8_byte": 4,
+      "end_line": 6,
+      "end_utf8_byte": 9
+    },
+    "function": "invalid",
+    "message": "A bare raise may only appear inside an exception handler",
+    "trace": [],
+    "suggestion": null
+  }
+]

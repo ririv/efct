@@ -1,0 +1,17 @@
+[
+  {
+    "code": "P1401",
+    "severity": "Error",
+    "filename": "partial/unreachable_exception_handler.py",
+    "span": {
+      "start_line": 10,
+      "start_utf8_byte": 4,
+      "end_line": 11,
+      "end_utf8_byte": 16
+    },
+    "function": "recover",
+    "message": "The exception handler type is covered by an earlier handler and is unreachable",
+    "trace": [],
+    "suggestion": null
+  }
+]

@@ -1,0 +1,33 @@
+[
+  {
+    "code": "P1001",
+    "severity": "Error",
+    "filename": "partial/finally_override.py",
+    "span": {
+      "start_line": 9,
+      "start_utf8_byte": 8,
+      "end_line": 9,
+      "end_utf8_byte": 34
+    },
+    "function": "invalid",
+    "message": "Function invalid contains undeclared partial behavior raise:builtins.TypeError",
+    "trace": [
+      "invalid",
+      "raise:builtins.TypeError"
+    ],
+    "effect_trace": [
+      {
+        "function": "invalid",
+        "filename": "partial/finally_override.py",
+        "span": {
+          "start_line": 9,
+          "start_utf8_byte": 8,
+          "end_line": 9,
+          "end_utf8_byte": 34
+        },
+        "operation": "Raise builtins.TypeError"
+      }
+    ],
+    "suggestion": "Declare @efct.pure(efct.partial.Raise(...)) or remove the partial operation raise:builtins.TypeError"
+  }
+]

@@ -1,0 +1,33 @@
+[
+  {
+    "code": "P1001",
+    "severity": "Error",
+    "filename": "environment/environment_read.py",
+    "span": {
+      "start_line": 7,
+      "start_utf8_byte": 11,
+      "end_line": 7,
+      "end_utf8_byte": 30
+    },
+    "function": "read_environment",
+    "message": "Function read_environment contains undeclared effect environment",
+    "trace": [
+      "read_environment",
+      "environment"
+    ],
+    "effect_trace": [
+      {
+        "function": "read_environment",
+        "filename": "environment/environment_read.py",
+        "span": {
+          "start_line": 7,
+          "start_utf8_byte": 11,
+          "end_line": 7,
+          "end_utf8_byte": 30
+        },
+        "operation": "Call os.getenv"
+      }
+    ],
+    "suggestion": "Declare @efct.effects(\"environment\") or remove the effectful operation"
+  }
+]

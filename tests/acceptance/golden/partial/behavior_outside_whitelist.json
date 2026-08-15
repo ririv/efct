@@ -1,0 +1,48 @@
+[
+  {
+    "code": "W1001",
+    "severity": "Warning",
+    "filename": "partial/behavior_outside_whitelist.py",
+    "span": {
+      "start_line": 5,
+      "start_utf8_byte": 0,
+      "end_line": 8,
+      "end_utf8_byte": 16
+    },
+    "function": "reject",
+    "message": "Declared partial behavior raise:builtins.TypeError is not used",
+    "trace": [],
+    "suggestion": "Remove the unused partial declaration"
+  },
+  {
+    "code": "P1001",
+    "severity": "Error",
+    "filename": "partial/behavior_outside_whitelist.py",
+    "span": {
+      "start_line": 7,
+      "start_utf8_byte": 8,
+      "end_line": 7,
+      "end_utf8_byte": 32
+    },
+    "function": "reject",
+    "message": "Function reject contains undeclared partial behavior raise:builtins.ValueError",
+    "trace": [
+      "reject",
+      "raise:builtins.ValueError"
+    ],
+    "effect_trace": [
+      {
+        "function": "reject",
+        "filename": "partial/behavior_outside_whitelist.py",
+        "span": {
+          "start_line": 7,
+          "start_utf8_byte": 8,
+          "end_line": 7,
+          "end_utf8_byte": 32
+        },
+        "operation": "Raise builtins.ValueError"
+      }
+    ],
+    "suggestion": "Declare @efct.pure(efct.partial.Raise(...)) or remove the partial operation raise:builtins.ValueError"
+  }
+]

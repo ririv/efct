@@ -1,0 +1,17 @@
+[
+  {
+    "code": "P1004",
+    "severity": "Error",
+    "filename": "dynamic/reflection.py",
+    "span": {
+      "start_line": 7,
+      "start_utf8_byte": 12,
+      "end_line": 7,
+      "end_utf8_byte": 14
+    },
+    "function": "reflect",
+    "message": "Value name os cannot be resolved",
+    "trace": [],
+    "suggestion": null
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "code": "P1201",
+    "severity": "Error",
+    "filename": "partial/new_exception_in_except_star.py",
+    "span": {
+      "start_line": 8,
+      "start_utf8_byte": 4,
+      "end_line": 9,
+      "end_utf8_byte": 30
+    },
+    "function": "invalid",
+    "message": "An except* handler may only handle normally or re-raise its matched subgroup; raising new partial behavior is not supported",
+    "trace": [],
+    "suggestion": null
+  }
+]

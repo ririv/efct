@@ -1,0 +1,17 @@
+[
+  {
+    "code": "P1006",
+    "severity": "Error",
+    "filename": "partial/unregistered_exception.py",
+    "span": {
+      "start_line": 5,
+      "start_utf8_byte": 0,
+      "end_line": 6,
+      "end_utf8_byte": 29
+    },
+    "function": "stop",
+    "message": "Exception type raise:SystemExit is not registered",
+    "trace": [],
+    "suggestion": null
+  }
+]

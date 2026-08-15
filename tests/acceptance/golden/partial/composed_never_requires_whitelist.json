@@ -1,0 +1,33 @@
+[
+  {
+    "code": "P1001",
+    "severity": "Error",
+    "filename": "partial/composed_never_requires_whitelist.py",
+    "span": {
+      "start_line": 6,
+      "start_utf8_byte": 11,
+      "end_line": 6,
+      "end_utf8_byte": 16
+    },
+    "function": "invalid",
+    "message": "Function invalid contains undeclared partial behavior raise:builtins.IndexError",
+    "trace": [
+      "invalid",
+      "raise:builtins.IndexError"
+    ],
+    "effect_trace": [
+      {
+        "function": "invalid",
+        "filename": "partial/composed_never_requires_whitelist.py",
+        "span": {
+          "start_line": 6,
+          "start_utf8_byte": 11,
+          "end_line": 6,
+          "end_utf8_byte": 16
+        },
+        "operation": "Index tuple"
+      }
+    ],
+    "suggestion": "Declare @efct.pure(efct.partial.Raise(...)) or remove the partial operation raise:builtins.IndexError"
+  }
+]

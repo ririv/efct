@@ -1,0 +1,64 @@
+name: Continuous integration
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / CPython ${{ matrix.python-version }} and Rust
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, ubuntu-24.04]
+        python-version: ["3.13", "3.14.7"]
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Install Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy,rustfmt
+
+      - name: Install development tools
+        run: python -m pip install "maturin>=1.9,<2.0" "pyright>=1.1.411,<2" "pytest>=8.4,<9" "ruff>=0.12,<1"
+
+      - name: Check Python lint rules
+        run: python -m ruff check .
+
+      - name: Check Rust formatting
+        run: cargo fmt --all -- --check
+
+      - name: Check Rust lint rules
+        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+      - name: Run Rust tests
+        run: cargo test --workspace
+
+      - name: Build release wheel
+        run: maturin build --release --locked --interpreter python --out dist
+
+      - name: Install release wheel
+        run: python -m pip install --no-deps dist/efct-*.whl
+
+      - name: Run Python tests
+        run: python -m pytest
+
+      - name: Check public Python types
+        env:
+          PYTHONPATH: python
+        run: pyright python/efct tests/typing
+
+      - name: Check installed command
+        run: efct --version

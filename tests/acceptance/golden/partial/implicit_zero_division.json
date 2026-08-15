@@ -1,0 +1,33 @@
+[
+  {
+    "code": "P1001",
+    "severity": "Error",
+    "filename": "partial/implicit_zero_division.py",
+    "span": {
+      "start_line": 6,
+      "start_utf8_byte": 11,
+      "end_line": 6,
+      "end_utf8_byte": 27
+    },
+    "function": "quotient",
+    "message": "Function quotient contains undeclared partial behavior raise:builtins.ZeroDivisionError",
+    "trace": [
+      "quotient",
+      "raise:builtins.ZeroDivisionError"
+    ],
+    "effect_trace": [
+      {
+        "function": "quotient",
+        "filename": "partial/implicit_zero_division.py",
+        "span": {
+          "start_line": 6,
+          "start_utf8_byte": 11,
+          "end_line": 6,
+          "end_utf8_byte": 27
+        },
+        "operation": "Integer floor division"
+      }
+    ],
+    "suggestion": "Declare @efct.pure(efct.partial.Raise(...)) or remove the partial operation raise:builtins.ZeroDivisionError"
+  }
+]

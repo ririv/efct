@@ -1,0 +1,33 @@
+[
+  {
+    "code": "P1001",
+    "severity": "Error",
+    "filename": "io/os_file_read.py",
+    "span": {
+      "start_line": 7,
+      "start_utf8_byte": 4,
+      "end_line": 7,
+      "end_utf8_byte": 20
+    },
+    "function": "list_directory",
+    "message": "Function list_directory contains undeclared effect file.read",
+    "trace": [
+      "list_directory",
+      "file.read"
+    ],
+    "effect_trace": [
+      {
+        "function": "list_directory",
+        "filename": "io/os_file_read.py",
+        "span": {
+          "start_line": 7,
+          "start_utf8_byte": 4,
+          "end_line": 7,
+          "end_utf8_byte": 20
+        },
+        "operation": "Call os.listdir"
+      }
+    ],
+    "suggestion": "Declare @efct.effects(\"file.read\") or remove the effectful operation"
+  }
+]

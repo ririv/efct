@@ -1,0 +1,33 @@
+[
+  {
+    "code": "P1001",
+    "severity": "Error",
+    "filename": "environment/environment_write.py",
+    "span": {
+      "start_line": 7,
+      "start_utf8_byte": 4,
+      "end_line": 7,
+      "end_utf8_byte": 26
+    },
+    "function": "write_environment",
+    "message": "Function write_environment contains undeclared effect environment",
+    "trace": [
+      "write_environment",
+      "environment"
+    ],
+    "effect_trace": [
+      {
+        "function": "write_environment",
+        "filename": "environment/environment_write.py",
+        "span": {
+          "start_line": 7,
+          "start_utf8_byte": 4,
+          "end_line": 7,
+          "end_utf8_byte": 26
+        },
+        "operation": "Call os.putenv"
+      }
+    ],
+    "suggestion": "Declare @efct.effects(\"environment\") or remove the effectful operation"
+  }
+]

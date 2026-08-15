@@ -1,0 +1,17 @@
+[
+  {
+    "code": "P1104",
+    "severity": "Error",
+    "filename": "partial/exception_binding_scope.py",
+    "span": {
+      "start_line": 10,
+      "start_utf8_byte": 15,
+      "end_line": 10,
+      "end_utf8_byte": 20
+    },
+    "function": "invalid",
+    "message": "Exception binding error is only available inside its handler",
+    "trace": [],
+    "suggestion": null
+  }
+]

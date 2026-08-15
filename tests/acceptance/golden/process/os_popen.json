@@ -1,0 +1,33 @@
+[
+  {
+    "code": "P1001",
+    "severity": "Error",
+    "filename": "process/os_popen.py",
+    "span": {
+      "start_line": 7,
+      "start_utf8_byte": 4,
+      "end_line": 7,
+      "end_utf8_byte": 21
+    },
+    "function": "run",
+    "message": "Function run contains undeclared effect process",
+    "trace": [
+      "run",
+      "process"
+    ],
+    "effect_trace": [
+      {
+        "function": "run",
+        "filename": "process/os_popen.py",
+        "span": {
+          "start_line": 7,
+          "start_utf8_byte": 4,
+          "end_line": 7,
+          "end_utf8_byte": 21
+        },
+        "operation": "Call os.popen"
+      }
+    ],
+    "suggestion": "Declare @efct.effects(\"process\") or remove the effectful operation"
+  }
+]

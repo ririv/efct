@@ -1,0 +1,278 @@
+name: Build release artifacts
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  wheels:
+    name: Wheel / ${{ matrix.platform.name }} / CPython ${{ matrix.python.version }}
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python:
+          - version: "3.13"
+            interpreter: python3.13
+            tag: cp313
+          - version: "3.14.7"
+            interpreter: python3.14
+            tag: cp314
+        platform:
+          - name: linux-x86_64
+            runner: ubuntu-24.04
+            target: x86_64
+          - name: macos-x86_64
+            runner: macos-15-intel
+            target: x86_64
+          - name: macos-aarch64
+            runner: macos-15
+            target: aarch64
+          - name: windows-x64
+            runner: windows-2025
+            target: x64
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Install Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python.version }}
+
+      - name: Remove build-machine paths from Rust artifacts
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+
+          roots = {
+              str(Path.cwd()): ".",
+              str(Path.home()): "rust-home",
+              "/github/home": "runner-home",
+              "/github/workspace": ".",
+              "/io": ".",
+              "/root": "rust-home",
+          }
+          for variable in ("GITHUB_WORKSPACE", "RUNNER_TEMP", "RUNNER_WORKSPACE"):
+              value = os.environ.get(variable)
+              if value:
+                  roots[value] = variable.lower().replace("_", "-")
+          flags = " ".join(
+              f"--remap-path-prefix={source}={target}"
+              for source, target in roots.items()
+          )
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as environment:
+              environment.write(f"RUSTFLAGS={flags}\n")
+          PY
+
+      - name: Build Linux wheel
+        if: runner.os == 'Linux'
+        uses: PyO3/maturin-action@86b9d133d34bc1b40018696f782949dac11bd380
+        with:
+          maturin-version: v1.11.5
+          target: ${{ matrix.platform.target }}
+          args: --release --locked --compatibility pypi --out dist --interpreter ${{ matrix.python.interpreter }}
+          manylinux: "2014"
+
+      - name: Build macOS or Windows wheel
+        if: runner.os != 'Linux'
+        uses: PyO3/maturin-action@86b9d133d34bc1b40018696f782949dac11bd380
+        with:
+          maturin-version: v1.11.5
+          target: ${{ matrix.platform.target }}
+          args: --release --locked --compatibility pypi --out dist --interpreter python
+
+      - name: Verify wheel contents
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          import re
+          from glob import glob
+          from zipfile import ZipFile
+
+          wheels = glob("dist/efct-*.whl")
+          if len(wheels) != 1:
+              raise SystemExit(f"expected one wheel, found {wheels}")
+          with ZipFile(wheels[0]) as archive:
+              names = set(archive.namelist())
+              payloads = {
+                  name: archive.read(name)
+                  for name in names
+                  if not name.endswith("/")
+              }
+          required = {
+              "efct/py.typed",
+              "efct/_core.pyi",
+              "efct/decorators.pyi",
+              "efct/runtime.pyi",
+          }
+          missing = sorted(required - names)
+          if missing:
+              raise SystemExit(f"wheel is missing public typing files: {missing}")
+          if not any(name.endswith(".dist-info/licenses/LICENSE") for name in names):
+              raise SystemExit("wheel is missing LICENSE metadata")
+
+          private_roots = {
+              value
+              for variable in (
+                  "GITHUB_WORKSPACE",
+                  "HOME",
+                  "RUNNER_TEMP",
+                  "RUNNER_WORKSPACE",
+                  "USERPROFILE",
+              )
+              if (value := os.environ.get(variable))
+          }
+          forbidden_patterns = [
+              re.compile(rb"/Users/[A-Za-z0-9._-]+/"),
+              re.compile(rb"/home/[A-Za-z0-9._-]+/"),
+              re.compile(rb"[A-Za-z]:[\\\\/]Users[\\\\/][A-Za-z0-9._-]+[\\\\/]"),
+          ]
+          leaks = []
+          for name, payload in payloads.items():
+              normalized = payload.replace(b"\\", b"/")
+              if any(
+                  root.encode() in payload
+                  or root.replace("\\", "/").encode() in normalized
+                  for root in private_roots
+              ):
+                  leaks.append(name)
+                  continue
+              if any(pattern.search(payload) for pattern in forbidden_patterns):
+                  leaks.append(name)
+          if leaks:
+              raise SystemExit(
+                  "wheel contains build-machine absolute paths: "
+                  f"{sorted(leaks)}"
+              )
+          PY
+
+      - name: Install wheel in an isolated environment
+        shell: bash
+        run: |
+          python -m venv release-check
+          release-check/bin/python -m pip install --no-deps dist/efct-*.whl
+          release-check/bin/efct --version
+          release-check/bin/python -c "import efct; print(efct.__name__)"
+        if: runner.os != 'Windows'
+
+      - name: Install wheel in an isolated Windows environment
+        shell: pwsh
+        run: |
+          python -m venv release-check
+          $wheel = (Get-ChildItem dist\efct-*.whl).FullName
+          release-check\Scripts\python.exe -m pip install --no-deps $wheel
+          release-check\Scripts\efct.exe --version
+          release-check\Scripts\python.exe -c "import efct; print(efct.__name__)"
+        if: runner.os == 'Windows'
+
+      - name: Upload wheel
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheel-${{ matrix.platform.name }}-${{ matrix.python.tag }}
+          path: dist/*.whl
+          if-no-files-found: error
+
+  sdist:
+    name: Source distribution
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Install Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14.7"
+
+      - name: Remove build-machine paths from Rust artifacts
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+
+          roots = {
+              str(Path.cwd()): ".",
+              str(Path.home()): "rust-home",
+              "/github/home": "runner-home",
+              "/github/workspace": ".",
+              "/io": ".",
+              "/root": "rust-home",
+          }
+          for variable in ("GITHUB_WORKSPACE", "RUNNER_TEMP", "RUNNER_WORKSPACE"):
+              value = os.environ.get(variable)
+              if value:
+                  roots[value] = variable.lower().replace("_", "-")
+          flags = " ".join(
+              f"--remap-path-prefix={source}={target}"
+              for source, target in roots.items()
+          )
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as environment:
+              environment.write(f"RUSTFLAGS={flags}\n")
+          PY
+
+      - name: Build source distribution
+        uses: PyO3/maturin-action@86b9d133d34bc1b40018696f782949dac11bd380
+        with:
+          maturin-version: v1.11.5
+          command: sdist
+          args: --out dist
+
+      - name: Verify source distribution contents
+        shell: bash
+        run: |
+          contents="$(tar -tzf dist/efct-*.tar.gz)"
+          grep -q '/LICENSE$' <<<"$contents"
+          grep -q '/README.md$' <<<"$contents"
+          grep -q '/README.zh-CN.md$' <<<"$contents"
+          if grep -Eq '/(AGENTS\.md|history/|internal-docs/)' <<<"$contents"; then
+            echo "source distribution contains private repository files" >&2
+            exit 1
+          fi
+
+      - name: Extract source distribution
+        run: |
+          mkdir sdist-check
+          tar -xzf dist/efct-*.tar.gz --strip-components=1 -C sdist-check
+
+      - name: Build wheel from source distribution
+        uses: PyO3/maturin-action@86b9d133d34bc1b40018696f782949dac11bd380
+        with:
+          maturin-version: v1.11.5
+          working-directory: sdist-check
+          container: "off"
+          args: --release --locked --out wheel --interpreter python
+
+      - name: Upload source distribution
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-distribution
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  checksums:
+    name: Artifact checksums
+    runs-on: ubuntu-24.04
+    needs: [wheels, sdist]
+    steps:
+      - name: Download candidate artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: Generate SHA-256 manifest
+        working-directory: release-artifacts
+        run: find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS
+
+      - name: Upload checksum manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: checksums
+          path: release-artifacts/SHA256SUMS
+          if-no-files-found: error

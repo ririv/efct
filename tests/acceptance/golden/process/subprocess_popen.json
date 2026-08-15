@@ -1,0 +1,32 @@
+[
+  {
+    "code": "P1301",
+    "severity": "Error",
+    "filename": "process/subprocess_popen.py",
+    "span": {
+      "start_line": 2,
+      "start_utf8_byte": 0,
+      "end_line": 2,
+      "end_utf8_byte": 17
+    },
+    "function": null,
+    "message": "Imported module subprocess is not certified by the MVP",
+    "trace": [],
+    "suggestion": null
+  },
+  {
+    "code": "P1004",
+    "severity": "Error",
+    "filename": "process/subprocess_popen.py",
+    "span": {
+      "start_line": 7,
+      "start_utf8_byte": 4,
+      "end_line": 7,
+      "end_utf8_byte": 14
+    },
+    "function": "run",
+    "message": "Value name subprocess cannot be resolved",
+    "trace": [],
+    "suggestion": null
+  }
+]

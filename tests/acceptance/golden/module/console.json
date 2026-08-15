@@ -1,0 +1,33 @@
+[
+  {
+    "code": "P1001",
+    "severity": "Error",
+    "filename": "module/console.py",
+    "span": {
+      "start_line": 4,
+      "start_utf8_byte": 0,
+      "end_line": 4,
+      "end_utf8_byte": 43
+    },
+    "function": "<module>",
+    "message": "Module initialization contains undeclared effect console",
+    "trace": [
+      "<module>",
+      "console"
+    ],
+    "effect_trace": [
+      {
+        "function": "<module>",
+        "filename": "module/console.py",
+        "span": {
+          "start_line": 4,
+          "start_utf8_byte": 0,
+          "end_line": 4,
+          "end_utf8_byte": 43
+        },
+        "operation": "Call builtins.print"
+      }
+    ],
+    "suggestion": "Declare `_efct = efct.effects(\"console\")` or remove the effectful operation"
+  }
+]

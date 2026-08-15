@@ -1,0 +1,13 @@
+[package]
+name = "efct-core"
+description = "Language dispatch for the Efct verification core"
+publish = false
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+efct-language-python.workspace = true
+efct-model.workspace = true
+efct-protocol.workspace = true

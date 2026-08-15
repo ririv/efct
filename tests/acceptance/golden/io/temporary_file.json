@@ -1,0 +1,32 @@
+[
+  {
+    "code": "P1301",
+    "severity": "Error",
+    "filename": "io/temporary_file.py",
+    "span": {
+      "start_line": 2,
+      "start_utf8_byte": 0,
+      "end_line": 2,
+      "end_utf8_byte": 15
+    },
+    "function": null,
+    "message": "Imported module tempfile is not certified by the MVP",
+    "trace": [],
+    "suggestion": null
+  },
+  {
+    "code": "P1004",
+    "severity": "Error",
+    "filename": "io/temporary_file.py",
+    "span": {
+      "start_line": 7,
+      "start_utf8_byte": 4,
+      "end_line": 7,
+      "end_utf8_byte": 12
+    },
+    "function": "create_temporary_file",
+    "message": "Value name tempfile cannot be resolved",
+    "trace": [],
+    "suggestion": null
+  }
+]

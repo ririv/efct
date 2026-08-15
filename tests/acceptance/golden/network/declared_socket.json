@@ -1,0 +1,32 @@
+[
+  {
+    "code": "P1301",
+    "severity": "Error",
+    "filename": "network/declared_socket.py",
+    "span": {
+      "start_line": 2,
+      "start_utf8_byte": 0,
+      "end_line": 2,
+      "end_utf8_byte": 13
+    },
+    "function": null,
+    "message": "Imported module socket is not certified by the MVP",
+    "trace": [],
+    "suggestion": null
+  },
+  {
+    "code": "P1004",
+    "severity": "Error",
+    "filename": "network/declared_socket.py",
+    "span": {
+      "start_line": 7,
+      "start_utf8_byte": 4,
+      "end_line": 7,
+      "end_utf8_byte": 10
+    },
+    "function": "connect",
+    "message": "Value name socket cannot be resolved",
+    "trace": [],
+    "suggestion": null
+  }
+]

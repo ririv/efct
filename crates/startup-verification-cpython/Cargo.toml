@@ -1,0 +1,19 @@
+[package]
+name = "efct-startup-verification-cpython"
+description = "CPython startup verification and capability issuance for Efct"
+publish = false
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+efct-frontend-cpython.workspace = true
+efct-language-python.workspace = true
+efct-model.workspace = true
+efct-protocol.workspace = true
+efct-runtime-contract-cpython.workspace = true
+pyo3.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true

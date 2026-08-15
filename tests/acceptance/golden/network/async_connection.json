@@ -1,0 +1,32 @@
+[
+  {
+    "code": "P1301",
+    "severity": "Error",
+    "filename": "network/async_connection.py",
+    "span": {
+      "start_line": 1,
+      "start_utf8_byte": 0,
+      "end_line": 1,
+      "end_utf8_byte": 14
+    },
+    "function": null,
+    "message": "Imported module asyncio is not certified by the MVP",
+    "trace": [],
+    "suggestion": null
+  },
+  {
+    "code": "P1004",
+    "severity": "Error",
+    "filename": "network/async_connection.py",
+    "span": {
+      "start_line": 8,
+      "start_utf8_byte": 4,
+      "end_line": 8,
+      "end_utf8_byte": 11
+    },
+    "function": "connect",
+    "message": "Value name asyncio cannot be resolved",
+    "trace": [],
+    "suggestion": null
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "code": "P1201",
+    "severity": "Error",
+    "filename": "partial/nonempty_as_pure_callable.py",
+    "span": {
+      "start_line": 18,
+      "start_utf8_byte": 11,
+      "end_line": 18,
+      "end_utf8_byte": 31
+    },
+    "function": "run",
+    "message": "The argument does not satisfy the explicit empty effect and partial contract required by PureCallable",
+    "trace": [],
+    "suggestion": null
+  }
+]
