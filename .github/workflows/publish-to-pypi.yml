@@ -1,0 +1,126 @@
+name: Publish release to PyPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_run_id:
+        description: Successful Build release artifacts run ID for this commit
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  publish:
+    name: Publish verified artifacts
+    runs-on: ubuntu-24.04
+    environment:
+      name: pypi
+      url: https://pypi.org/project/efct/
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out release source
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Verify source build run
+        env:
+          BUILD_RUN_ID: ${{ inputs.build_run_id }}
+          EXPECTED_SHA: ${{ github.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from urllib.request import Request, urlopen
+
+          repository = os.environ["GITHUB_REPOSITORY"]
+          run_id = os.environ["BUILD_RUN_ID"]
+          request = Request(
+              f"https://api.github.com/repos/{repository}/actions/runs/{run_id}",
+              headers={
+                  "Accept": "application/vnd.github+json",
+                  "Authorization": f"Bearer {os.environ['GH_TOKEN']}",
+                  "X-GitHub-Api-Version": "2022-11-28",
+              },
+          )
+          with urlopen(request) as response:
+              run = json.load(response)
+
+          expected = {
+              "conclusion": "success",
+              "event": "workflow_dispatch",
+              "head_sha": os.environ["EXPECTED_SHA"],
+              "path": ".github/workflows/release-artifacts.yml",
+          }
+          mismatches = {
+              field: {"expected": value, "actual": run.get(field)}
+              for field, value in expected.items()
+              if run.get(field) != value
+          }
+          if mismatches:
+              raise SystemExit(
+                  "build run does not match this release source: "
+                  f"{mismatches}"
+              )
+          PY
+
+      - name: Download verified artifacts
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          path: release-artifacts
+          run-id: ${{ inputs.build_run_id }}
+
+      - name: Verify checksums and stage distributions
+        run: |
+          cd release-artifacts
+          sha256sum --check checksums/SHA256SUMS
+          cd ..
+          python - <<'PY'
+          import shutil
+          import tomllib
+          from pathlib import Path
+
+          with Path("pyproject.toml").open("rb") as project_file:
+              project = tomllib.load(project_file)["project"]
+          distribution = project["name"].replace("-", "_")
+          version = project["version"]
+          prefix = f"{distribution}-{version}"
+
+          artifacts = Path("release-artifacts")
+          wheels = sorted(artifacts.glob("wheel-*/*.whl"))
+          source_distributions = sorted(
+              artifacts.glob("source-distribution/*.tar.gz")
+          )
+          if len(wheels) != 8:
+              raise SystemExit(f"expected 8 wheels, found {wheels}")
+          if len(source_distributions) != 1:
+              raise SystemExit(
+                  "expected one source distribution, found "
+                  f"{source_distributions}"
+              )
+
+          distributions = [*wheels, *source_distributions]
+          unexpected = [
+              path.name for path in distributions if not path.name.startswith(prefix)
+          ]
+          if unexpected:
+              raise SystemExit(
+                  f"artifacts do not match {distribution} {version}: {unexpected}"
+              )
+
+          destination = Path("dist")
+          destination.mkdir()
+          for path in distributions:
+              shutil.copy2(path, destination / path.name)
+          PY
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
