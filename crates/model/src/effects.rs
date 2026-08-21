@@ -1,20 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub enum ExternalEffect {
-    Console,
-    FileRead,
-    FileWrite,
-    Network,
-    Clock,
-    Random,
-    Environment,
-    Process,
-    GlobalRead,
-    GlobalWrite,
-    Unsafe,
-}
+pub use efct::Effect as ExternalEffect;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ExceptionId(String);
@@ -259,17 +246,6 @@ impl Effect {
 
     pub fn parse(value: &str) -> Result<Self, EffectParseError> {
         match value {
-            "console" => Ok(ExternalEffect::Console.into()),
-            "file.read" => Ok(ExternalEffect::FileRead.into()),
-            "file.write" => Ok(ExternalEffect::FileWrite.into()),
-            "network" => Ok(ExternalEffect::Network.into()),
-            "clock" => Ok(ExternalEffect::Clock.into()),
-            "random" => Ok(ExternalEffect::Random.into()),
-            "environment" => Ok(ExternalEffect::Environment.into()),
-            "process" => Ok(ExternalEffect::Process.into()),
-            "global.read" => Ok(ExternalEffect::GlobalRead.into()),
-            "global.write" => Ok(ExternalEffect::GlobalWrite.into()),
-            "unsafe" => Ok(ExternalEffect::Unsafe.into()),
             "throw" => Ok(Self::Partial(PartialBehavior::Throw)),
             "diverge" => Ok(Self::Partial(PartialBehavior::Diverge)),
             _ if value.starts_with("raise-group:") => {
@@ -286,7 +262,10 @@ impl Effect {
                     .map_err(|_| EffectParseError::InvalidException(value.to_owned()))?;
                 Ok(Self::Partial(PartialBehavior::Raise(exception)))
             }
-            _ => Err(EffectParseError::Unknown(value.to_owned())),
+            _ => value
+                .parse::<ExternalEffect>()
+                .map(Self::External)
+                .map_err(|_| EffectParseError::Unknown(value.to_owned())),
         }
     }
 }
@@ -308,24 +287,6 @@ impl fmt::Display for Effect {
         match self {
             Self::External(effect) => write!(formatter, "{effect}"),
             Self::Partial(partial) => write!(formatter, "{partial}"),
-        }
-    }
-}
-
-impl fmt::Display for ExternalEffect {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Console => formatter.write_str("console"),
-            Self::FileRead => formatter.write_str("file.read"),
-            Self::FileWrite => formatter.write_str("file.write"),
-            Self::Network => formatter.write_str("network"),
-            Self::Clock => formatter.write_str("clock"),
-            Self::Random => formatter.write_str("random"),
-            Self::Environment => formatter.write_str("environment"),
-            Self::Process => formatter.write_str("process"),
-            Self::GlobalRead => formatter.write_str("global.read"),
-            Self::GlobalWrite => formatter.write_str("global.write"),
-            Self::Unsafe => formatter.write_str("unsafe"),
         }
     }
 }

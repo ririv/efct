@@ -1,0 +1,15 @@
+[package]
+name = "efct"
+description = "Rust types for describing external effects with Efct"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository = "https://github.com/ririv/efct"
+homepage = "https://github.com/ririv/efct"
+documentation = "https://docs.rs/efct"
+readme = "README.md"
+keywords = ["effects", "purity", "static-analysis"]
+categories = ["development-tools", "data-structures"]
+
+[dependencies]

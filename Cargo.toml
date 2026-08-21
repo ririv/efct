@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "crates/efct",
     "crates/core",
     "crates/engine",
     "crates/language-python",
@@ -22,6 +23,7 @@ license = "MIT"
 rust-version = "1.85"
 
 [workspace.dependencies]
+efct = { path = "crates/efct" }
 efct-core = { path = "crates/core" }
 efct-engine = { path = "crates/engine" }
 efct-frontend-cpython = { path = "crates/frontend-cpython" }

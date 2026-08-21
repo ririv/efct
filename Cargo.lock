@@ -93,6 +93,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f678cf4a922c215c63e0de95eb1ff08a958a81d47e485cf9da1e27bf6305cfa5"
 
 [[package]]
+name = "efct"
+version = "0.1.0"
+
+[[package]]
 name = "efct-core"
 version = "0.1.0"
 dependencies = [
@@ -140,6 +144,7 @@ dependencies = [
 name = "efct-model"
 version = "0.1.0"
 dependencies = [
+ "efct",
  "serde",
  "thiserror",
 ]
