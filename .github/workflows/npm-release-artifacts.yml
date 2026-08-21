@@ -130,7 +130,7 @@ jobs:
               "native/efct-napi.win32-x64.node",
           }
           result = subprocess.run(
-              ["npm", "pack", "--workspace", "efct", "--dry-run", "--json"],
+              ["npm", "pack", "--workspace", "@efct/efct", "--dry-run", "--json"],
               check=True,
               capture_output=True,
               text=True,
@@ -148,7 +148,7 @@ jobs:
           ]
           if forbidden:
               raise SystemExit(f"npm package contains private or test files: {forbidden}")
-          if package["name"] != "efct" or package["version"] != "0.1.0":
+          if package["name"] != "@efct/efct" or package["version"] != "0.1.0":
               raise SystemExit(f"unexpected npm identity: {package['name']} {package['version']}")
           path_patterns = [
               re.compile(rb"/Users/[A-Za-z0-9._-]+/"),
@@ -165,7 +165,7 @@ jobs:
           PY
 
       - name: Pack npm candidate
-        run: mkdir npm-dist && npm pack --workspace efct --pack-destination npm-dist
+        run: mkdir npm-dist && npm pack --workspace @efct/efct --pack-destination npm-dist
 
       - name: Generate checksum
         run: cd npm-dist && sha256sum efct-*.tgz > SHA256SUMS
@@ -229,7 +229,7 @@ jobs:
               encoding="utf-8",
           )
           source = (
-              'import { defineModule, pure } from "efct";\n\n'
+              'import { defineModule, pure } from "@efct/efct";\n\n'
               'export const { add } = defineModule(import.meta.url, {\n'
               '  add: pure()(\n'
               '    /**\n'

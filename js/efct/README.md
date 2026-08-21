@@ -9,7 +9,7 @@ The 0.1 release targets ESM on exactly Node.js 24.19.0 and TypeScript 5.9.3. Typ
 ## Install
 
 ```console
-npm install efct
+npm install @efct/efct
 ```
 
 Efct uses a prebuilt Node-API native verifier. Installing the published package does not compile Rust locally.
@@ -25,7 +25,7 @@ The application package must declare ESM explicitly:
 ## Define verified functions
 
 ```ts
-import { defineModule, effect, effects, partial, pure } from "efct";
+import { defineModule, effect, effects, partial, pure } from "@efct/efct";
 
 export const { add, currentTime, requireNonNegative } = defineModule(
   import.meta.url,
@@ -58,7 +58,7 @@ String declarations remain available for generated code and compatibility:
 
 ```ts
 import { readFileSync } from "node:fs";
-import { effects } from "efct";
+import { effects } from "@efct/efct";
 
 effects("file.read", "throw")(function readText(path: string): string {
   return readFileSync(path, "utf8");

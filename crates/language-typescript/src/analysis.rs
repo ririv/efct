@@ -61,7 +61,9 @@ impl<'a> Analyzer<'a> {
         self.declaration_imports = items
             .iter()
             .filter_map(|item| match item {
-                EcmaModuleItem::Import { module, names, .. } if module == "efct" => Some(names),
+                EcmaModuleItem::Import { module, names, .. } if module == "@efct/efct" => {
+                    Some(names)
+                }
                 _ => None,
             })
             .flatten()
@@ -199,7 +201,7 @@ impl<'a> Analyzer<'a> {
         resolved: Option<&str>,
         names: Vec<efct_protocol::EcmaImportName>,
     ) {
-        if module != "efct" {
+        if module != "@efct/efct" {
             if resolved.is_some() {
                 for name in names {
                     if name.type_only {

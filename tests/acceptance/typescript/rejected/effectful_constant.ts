@@ -1,4 +1,4 @@
-import { defineModule, pure } from "efct";
+import { defineModule, pure } from "@efct/efct";
 
 const START: number = Date.now();
 

@@ -1,4 +1,4 @@
-import { defineModule, pure } from "efct";
+import { defineModule, pure } from "@efct/efct";
 
 import { add } from "./project_math.js";
 

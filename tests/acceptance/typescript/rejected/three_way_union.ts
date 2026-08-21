@@ -1,4 +1,4 @@
-import { defineModule, pure } from "efct";
+import { defineModule, pure } from "@efct/efct";
 
 export const { preserve } = defineModule(import.meta.url, {
   preserve: pure()(function preserve(

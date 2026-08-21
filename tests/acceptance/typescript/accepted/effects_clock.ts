@@ -1,4 +1,4 @@
-import { defineModule, effect, effects } from "efct";
+import { defineModule, effect, effects } from "@efct/efct";
 
 export const { currentTime } = defineModule(import.meta.url, {
   currentTime: effects(effect.Clock())(function currentTime(): number {

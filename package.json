@@ -6,8 +6,8 @@
     "js/efct"
   ],
   "scripts": {
-    "check": "npm run check --workspace efct",
-    "test": "npm run test --workspace efct"
+    "check": "npm run check --workspace @efct/efct",
+    "test": "npm run test --workspace @efct/efct"
   },
   "devDependencies": {
     "@types/node": "24.13.3",

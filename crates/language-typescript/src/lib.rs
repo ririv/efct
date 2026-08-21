@@ -415,7 +415,7 @@ mod tests {
             root: EcmaModuleNode {
                 items: vec![
                     EcmaModuleItem::Import {
-                        module: "efct".to_owned(),
+                        module: "@efct/efct".to_owned(),
                         resolved: None,
                         names: vec![
                             EcmaImportName {

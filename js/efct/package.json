@@ -1,5 +1,5 @@
 {
-  "name": "efct",
+  "name": "@efct/efct",
   "version": "0.1.0",
   "private": false,
   "description": "Static purity, effect, and partiality verification for TypeScript and JavaScript",

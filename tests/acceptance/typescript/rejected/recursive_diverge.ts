@@ -1,4 +1,4 @@
-import { defineModule, pure } from "efct";
+import { defineModule, pure } from "@efct/efct";
 
 export const { recurse } = defineModule(import.meta.url, {
   recurse: pure()(function recurse(value: number): number {

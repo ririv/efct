@@ -1,4 +1,4 @@
-import { defineModule, partial, pure } from "efct";
+import { defineModule, partial, pure } from "@efct/efct";
 
 export const { requireNonNegative } = defineModule(import.meta.url, {
   requireNonNegative: pure(partial.Throw())(

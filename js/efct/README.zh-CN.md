@@ -9,7 +9,7 @@ Efct 验证函数是否遵守显式的纯度、外部效果与 partial 行为边
 ## 安装
 
 ```console
-npm install efct
+npm install @efct/efct
 ```
 
 Efct 使用预编译的 Node-API 原生验证器。安装正式发布包时不需要在本机编译 Rust。
@@ -25,7 +25,7 @@ Efct 使用预编译的 Node-API 原生验证器。安装正式发布包时不�
 ## 定义受检函数
 
 ```ts
-import { defineModule, effect, effects, partial, pure } from "efct";
+import { defineModule, effect, effects, partial, pure } from "@efct/efct";
 
 export const { add, currentTime, requireNonNegative } = defineModule(
   import.meta.url,
@@ -58,7 +58,7 @@ export const { add, currentTime, requireNonNegative } = defineModule(
 
 ```ts
 import { readFileSync } from "node:fs";
-import { effects } from "efct";
+import { effects } from "@efct/efct";
 
 effects("file.read", "throw")(function readText(path: string): string {
   return readFileSync(path, "utf8");

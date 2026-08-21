@@ -1,4 +1,4 @@
-import { defineModule, pure } from "efct";
+import { defineModule, pure } from "@efct/efct";
 
 export const { compute } = defineModule(import.meta.url, {
   compute: pure()(function compute(value: number, double: boolean): number {

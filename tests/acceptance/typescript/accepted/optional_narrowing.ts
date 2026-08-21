@@ -1,4 +1,4 @@
-import { defineModule, pure } from "efct";
+import { defineModule, pure } from "@efct/efct";
 
 export const { defaultNumber } = defineModule(import.meta.url, {
   defaultNumber: pure()(function defaultNumber(value: number | null): number {

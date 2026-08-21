@@ -1,4 +1,4 @@
-import { defineModule, pure } from "efct";
+import { defineModule, pure } from "@efct/efct";
 
 export const { recover } = defineModule(import.meta.url, {
   recover: pure()(function recover(): string {

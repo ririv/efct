@@ -105,7 +105,7 @@ jobs:
               candidate = json.load(member)
           if source.get("private") is not False or candidate.get("private") is not False:
               raise SystemExit("npm publication remains disabled by private: true")
-          expected = {"name": "efct", "version": "0.1.0"}
+          expected = {"name": "@efct/efct", "version": "0.1.0"}
           for field, value in expected.items():
               if source.get(field) != value or candidate.get(field) != value:
                   raise SystemExit(

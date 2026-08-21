@@ -171,12 +171,12 @@ test("lowers strong external effect declarations and registered calls", async ()
 });
 
 test("keeps string declarations but rejects mixing declaration styles", async () => {
-  const stringSource = `import { defineModule, effects } from "efct";
+  const stringSource = `import { defineModule, effects } from "@efct/efct";
 export const { currentTime } = defineModule(import.meta.url, {
   currentTime: effects("clock")(function currentTime(): number { return Date.now(); }),
 });
 `;
-  const mixedSource = `import { defineModule, effect, effects } from "efct";
+  const mixedSource = `import { defineModule, effect, effects } from "@efct/efct";
 export const { currentTime } = defineModule(import.meta.url, {
   currentTime: effects(effect.Clock(), "throw")(
     function currentTime(): number { return Date.now(); },
