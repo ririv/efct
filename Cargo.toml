@@ -3,7 +3,9 @@ members = [
     "crates/core",
     "crates/engine",
     "crates/language-python",
+    "crates/language-typescript",
     "crates/model",
+    "crates/napi",
     "crates/protocol",
     "crates/project",
     "crates/pyext",
@@ -24,11 +26,14 @@ efct-core = { path = "crates/core" }
 efct-engine = { path = "crates/engine" }
 efct-frontend-cpython = { path = "crates/frontend-cpython" }
 efct-language-python = { path = "crates/language-python" }
+efct-language-typescript = { path = "crates/language-typescript" }
 efct-model = { path = "crates/model" }
 efct-protocol = { path = "crates/protocol" }
 efct-project = { path = "crates/project" }
 efct-runtime-contract-cpython = { path = "crates/runtime-contract-cpython" }
 efct-startup-verification-cpython = { path = "crates/startup-verification-cpython" }
+napi = { version = "=3.4.0", default-features = false, features = ["dyn-symbols", "napi8", "serde-json"] }
+napi-derive = "=3.3.0"
 pyo3 = "0.29.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

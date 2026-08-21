@@ -125,13 +125,15 @@ pub(super) fn validate_imports(module: &Module, diagnostics: &mut Vec<Diagnostic
     let mut has_efct = false;
     for import in &module.imports {
         match import {
-            Import::Module { path, binding, .. } if path == "efct" && binding == "efct" => {
-                has_efct = true
-            }
+            Import::Module { path, .. } if path == "efct" => has_efct = true,
             Import::Module { path, .. } if path == "typing" => {}
             Import::Symbol { module, name, .. } if module == "typing" && name == "Optional" => {}
             Import::Symbol { module, name, .. }
-                if module == "efct" && matches!(name.as_str(), "effect" | "partial") => {}
+                if module == "efct"
+                    && matches!(name.as_str(), "effect" | "effects" | "partial" | "pure") =>
+            {
+                has_efct = true
+            }
             Import::Module { path, .. }
                 if matches!(
                     crate::python_import_role(path),
@@ -170,7 +172,7 @@ pub(super) fn validate_imports(module: &Module, diagnostics: &mut Vec<Diagnostic
             module.filename.clone(),
             module.functions.first().map(|function| function.span),
             None,
-            "A checked module must use `import efct`",
+            "A checked module must explicitly import the Efct API",
         ));
     }
 }

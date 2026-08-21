@@ -28,13 +28,13 @@ efct --version
 
 ## 快速开始
 
-使用 `@efct.pure` 标记函数：
+直接导入数量很少的公开 API，并使用 `@pure` 标记函数：
 
 ```python
-import efct
+from efct import pure
 
 
-@efct.pure
+@pure
 def add(left: int, right: int) -> int:
     return left + right
 
@@ -52,6 +52,10 @@ efct check src/
 ```
 
 Efct 会拒绝未知语法、未知调用、跨函数边界的可变值，以及超出声明上界的行为，不会把未经验证的代码当作纯代码。
+
+## 示例
+
+[结算策略示例](https://github.com/ririv/efct/blob/main/examples/checkout/README.zh-CN.md)是一个可以运行的小程序，它把环境变量和时钟访问与确定性的账单计算分离。[诊断示例](https://github.com/ririv/efct/blob/main/examples/diagnostics/README.zh-CN.md)则用五组错误与修正程序展示隐藏文件访问、非确定性、异常、未认证依赖和不终止。
 
 ## 纯函数与部分行为
 

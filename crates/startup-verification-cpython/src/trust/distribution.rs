@@ -2,6 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::PathBuf;
 
+use pyo3::exceptions::PyAttributeError;
 use pyo3::prelude::*;
 use sha2::{Digest, Sha256};
 
@@ -283,7 +284,11 @@ fn reject_editable(py: Python<'_>, distribution: &Bound<'_, PyAny>, name: &str) 
     if origin.is_none() {
         return Ok(());
     }
-    let dir_info = origin.getattr("dir_info")?;
+    let dir_info = match origin.getattr("dir_info") {
+        Ok(dir_info) => dir_info,
+        Err(error) if error.is_instance_of::<PyAttributeError>(py) => return Ok(()),
+        Err(error) => return Err(error),
+    };
     if !dir_info.is_none() && dir_info.getattr("editable")?.extract::<bool>()? {
         return crate::error::fail(
             py,

@@ -86,6 +86,7 @@ pub(super) fn verify_effect_declarations(
                     let details = effect_trace_details(&function.name, effect, bodies);
                     let partial_expression = match effect {
                         Effect::Partial(PartialBehavior::RaiseGroup(_)) => "RaiseGroup(...)",
+                        Effect::Partial(PartialBehavior::Throw) => "Throw()",
                         Effect::Partial(PartialBehavior::Diverge) => "Diverge()",
                         Effect::Partial(PartialBehavior::Raise(_)) | Effect::External(_) => {
                             "Raise(...)"

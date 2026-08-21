@@ -2,8 +2,8 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 pub use efct_model::{
-    LanguageIdentity, PythonImplementation, SUPPORTED_CPYTHON_MESSAGE, SourceSpan, TrustPolicy,
-    supports_cpython_version,
+    LanguageIdentity, NodeRuntimeIdentity, PythonImplementation, SUPPORTED_CPYTHON_MESSAGE,
+    SourceSpan, TrustPolicy, TypeScriptCompilerIdentity, supports_cpython_version,
 };
 
 pub const PROTOCOL_VERSION: u32 = 1;
@@ -27,9 +27,313 @@ pub enum SourceLanguage {
         version: [u8; 3],
         root: ModuleNode,
     },
+    #[serde(rename = "typescript")]
     TypeScript {
-        compiler_version: String,
+        compiler: TypeScriptCompilerIdentity,
+        runtime: NodeRuntimeIdentity,
+        config_sha256: String,
+        root: EcmaModuleNode,
     },
+    #[serde(rename = "javascript")]
+    JavaScript {
+        checker: TypeScriptCompilerIdentity,
+        runtime: NodeRuntimeIdentity,
+        config_sha256: String,
+        root: EcmaModuleNode,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EcmaModuleNode {
+    pub items: Vec<EcmaModuleItem>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum EcmaModuleItem {
+    Import {
+        module: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        resolved: Option<String>,
+        names: Vec<EcmaImportName>,
+        span: Utf16SourceSpan,
+    },
+    Constant {
+        name: String,
+        annotation: Option<EcmaTypeNode>,
+        value: EcmaExpressionNode,
+        span: Utf16SourceSpan,
+    },
+    ModuleDefinition {
+        exports: Vec<String>,
+        functions: Vec<EcmaFunctionNode>,
+        span: Utf16SourceSpan,
+    },
+    Unsupported {
+        node: String,
+        span: Utf16SourceSpan,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EcmaImportName {
+    pub imported: String,
+    pub local: String,
+    pub type_only: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EcmaFunctionNode {
+    pub name: String,
+    pub contract: EcmaFunctionContract,
+    pub parameters: Vec<EcmaParameterNode>,
+    pub returns: EcmaTypeNode,
+    pub body: Vec<EcmaStatementNode>,
+    pub span: Utf16SourceSpan,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum EcmaFunctionContract {
+    Pure {
+        partial: EcmaPartialContract,
+    },
+    Effects {
+        effects: EcmaEffectContract,
+        partial: EcmaPartialContract,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum EcmaEffectContract {
+    Inferred,
+    Explicit { effects: Vec<EcmaExternalEffect> },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum EcmaExternalEffect {
+    Console,
+    FileRead,
+    FileWrite,
+    Network,
+    Clock,
+    Random,
+    Environment,
+    Process,
+    StateRead,
+    StateWrite,
+    Unsafe,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum EcmaPartialContract {
+    Inferred,
+    ExplicitEmpty,
+    Explicit { behaviors: Vec<EcmaPartialBehavior> },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum EcmaPartialBehavior {
+    Throw,
+    Diverge,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EcmaParameterNode {
+    pub name: String,
+    pub annotation: EcmaTypeNode,
+    pub span: Utf16SourceSpan,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum EcmaTypeNode {
+    Undefined,
+    Null,
+    Boolean,
+    Number,
+    BigInt,
+    String,
+    Void,
+    Optional {
+        value: Box<EcmaTypeNode>,
+        absence: EcmaOptionalAbsence,
+    },
+    Unsupported {
+        node: String,
+        span: Utf16SourceSpan,
+    },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum EcmaOptionalAbsence {
+    Null,
+    Undefined,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum EcmaStatementNode {
+    Variable {
+        name: String,
+        annotation: Option<EcmaTypeNode>,
+        value: EcmaExpressionNode,
+        span: Utf16SourceSpan,
+    },
+    Assignment {
+        name: String,
+        value: EcmaExpressionNode,
+        span: Utf16SourceSpan,
+    },
+    Expression {
+        expression: EcmaExpressionNode,
+        span: Utf16SourceSpan,
+    },
+    Return {
+        value: Option<EcmaExpressionNode>,
+        span: Utf16SourceSpan,
+    },
+    If {
+        condition: EcmaExpressionNode,
+        then_body: Vec<EcmaStatementNode>,
+        else_body: Vec<EcmaStatementNode>,
+        span: Utf16SourceSpan,
+    },
+    While {
+        condition: EcmaExpressionNode,
+        body: Vec<EcmaStatementNode>,
+        span: Utf16SourceSpan,
+    },
+    Throw {
+        value: EcmaExpressionNode,
+        span: Utf16SourceSpan,
+    },
+    Try {
+        body: Vec<EcmaStatementNode>,
+        catch_body: Option<Vec<EcmaStatementNode>>,
+        finally_body: Option<Vec<EcmaStatementNode>>,
+        span: Utf16SourceSpan,
+    },
+    Unsupported {
+        node: String,
+        span: Utf16SourceSpan,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum EcmaExpressionNode {
+    Identifier {
+        name: String,
+        span: Utf16SourceSpan,
+    },
+    Undefined {
+        span: Utf16SourceSpan,
+    },
+    Null {
+        span: Utf16SourceSpan,
+    },
+    Boolean {
+        value: bool,
+        span: Utf16SourceSpan,
+    },
+    Number {
+        text: String,
+        span: Utf16SourceSpan,
+    },
+    BigInt {
+        text: String,
+        span: Utf16SourceSpan,
+    },
+    String {
+        value: String,
+        span: Utf16SourceSpan,
+    },
+    Unary {
+        operator: EcmaUnaryOperator,
+        operand: Box<EcmaExpressionNode>,
+        span: Utf16SourceSpan,
+    },
+    Binary {
+        left: Box<EcmaExpressionNode>,
+        operator: EcmaBinaryOperator,
+        right: Box<EcmaExpressionNode>,
+        span: Utf16SourceSpan,
+    },
+    Conditional {
+        condition: Box<EcmaExpressionNode>,
+        when_true: Box<EcmaExpressionNode>,
+        when_false: Box<EcmaExpressionNode>,
+        span: Utf16SourceSpan,
+    },
+    Call {
+        target: Vec<String>,
+        arguments: Vec<EcmaExpressionNode>,
+        span: Utf16SourceSpan,
+    },
+    Property {
+        target: Vec<String>,
+        span: Utf16SourceSpan,
+    },
+    Error {
+        constructor: EcmaErrorConstructor,
+        message: Option<Box<EcmaExpressionNode>>,
+        span: Utf16SourceSpan,
+    },
+    Unsupported {
+        node: String,
+        span: Utf16SourceSpan,
+    },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum EcmaErrorConstructor {
+    Error,
+    TypeError,
+    RangeError,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum EcmaUnaryOperator {
+    Positive,
+    Negative,
+    Not,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum EcmaBinaryOperator {
+    Add,
+    Subtract,
+    Multiply,
+    Divide,
+    Remainder,
+    StrictEqual,
+    StrictNotEqual,
+    Less,
+    LessEqual,
+    Greater,
+    GreaterEqual,
+    And,
+    Or,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Utf16SourceSpan {
+    pub start: u32,
+    pub end: u32,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -557,16 +861,31 @@ pub enum ProtocolError {
     UnsupportedVersion { actual: u32, expected: u32 },
     #[error("The source SHA-256 has an invalid format")]
     InvalidSourceHash,
+    #[error("The TypeScript installation SHA-256 has an invalid format")]
+    InvalidCompilerHash,
+    #[error("The effective TypeScript configuration SHA-256 has an invalid format")]
+    InvalidConfigHash,
+    #[error("An ECMAScript UTF-16 source span is invalid")]
+    InvalidUtf16Span,
 }
 
 pub fn decode(payload: &[u8]) -> Result<SourceEnvelope, ProtocolError> {
     let envelope: SourceEnvelope = serde_json::from_slice(payload)?;
-    validate_envelope(&envelope)?;
+    validate(&envelope)?;
     Ok(envelope)
+}
+
+pub fn validate(envelope: &SourceEnvelope) -> Result<(), ProtocolError> {
+    validate_envelope(envelope)
 }
 
 pub fn decode_project(payload: &[u8]) -> Result<ProjectEnvelope, ProtocolError> {
     let project: ProjectEnvelope = serde_json::from_slice(payload)?;
+    validate_project(&project)?;
+    Ok(project)
+}
+
+pub fn validate_project(project: &ProjectEnvelope) -> Result<(), ProtocolError> {
     if project.protocol_version != PROTOCOL_VERSION {
         return Err(ProtocolError::UnsupportedVersion {
             actual: project.protocol_version,
@@ -584,7 +903,7 @@ pub fn decode_project(payload: &[u8]) -> Result<ProjectEnvelope, ProtocolError> 
             )));
         }
     }
-    Ok(project)
+    Ok(())
 }
 
 fn source_identity(source: &SourceLanguage) -> LanguageIdentity {
@@ -597,8 +916,17 @@ fn source_identity(source: &SourceLanguage) -> LanguageIdentity {
             implementation: *implementation,
             version: *version,
         },
-        SourceLanguage::TypeScript { compiler_version } => LanguageIdentity::TypeScript {
-            compiler_version: compiler_version.clone(),
+        SourceLanguage::TypeScript {
+            compiler, runtime, ..
+        } => LanguageIdentity::TypeScript {
+            compiler: compiler.clone(),
+            runtime: *runtime,
+        },
+        SourceLanguage::JavaScript {
+            checker, runtime, ..
+        } => LanguageIdentity::JavaScript {
+            checker: checker.clone(),
+            runtime: *runtime,
         },
     }
 }
@@ -610,15 +938,195 @@ fn validate_envelope(envelope: &SourceEnvelope) -> Result<(), ProtocolError> {
             expected: PROTOCOL_VERSION,
         });
     }
-    if envelope.source_sha256.len() != 64
-        || !envelope
-            .source_sha256
-            .bytes()
-            .all(|byte| byte.is_ascii_hexdigit())
-    {
+    if !is_sha256(&envelope.source_sha256) {
         return Err(ProtocolError::InvalidSourceHash);
     }
+    match &envelope.language {
+        SourceLanguage::Python { .. } => {}
+        SourceLanguage::TypeScript {
+            compiler,
+            config_sha256,
+            root,
+            ..
+        } => validate_ecma_source(compiler, config_sha256, root)?,
+        SourceLanguage::JavaScript {
+            checker,
+            config_sha256,
+            root,
+            ..
+        } => validate_ecma_source(checker, config_sha256, root)?,
+    }
     Ok(())
+}
+
+fn validate_ecma_source(
+    compiler: &TypeScriptCompilerIdentity,
+    config_sha256: &str,
+    root: &EcmaModuleNode,
+) -> Result<(), ProtocolError> {
+    if !is_sha256(&compiler.installation_sha256) {
+        return Err(ProtocolError::InvalidCompilerHash);
+    }
+    if !is_sha256(config_sha256) {
+        return Err(ProtocolError::InvalidConfigHash);
+    }
+    if root.items.iter().any(module_item_has_invalid_span) {
+        return Err(ProtocolError::InvalidUtf16Span);
+    }
+    Ok(())
+}
+
+fn module_item_has_invalid_span(item: &EcmaModuleItem) -> bool {
+    match item {
+        EcmaModuleItem::Import { span, .. } | EcmaModuleItem::Unsupported { span, .. } => {
+            invalid_span(*span)
+        }
+        EcmaModuleItem::Constant {
+            annotation,
+            value,
+            span,
+            ..
+        } => {
+            invalid_span(*span)
+                || annotation.as_ref().is_some_and(type_has_invalid_span)
+                || expression_has_invalid_span(value)
+        }
+        EcmaModuleItem::ModuleDefinition {
+            functions, span, ..
+        } => invalid_span(*span) || functions.iter().any(function_has_invalid_span),
+    }
+}
+
+fn function_has_invalid_span(function: &EcmaFunctionNode) -> bool {
+    invalid_span(function.span)
+        || function.parameters.iter().any(|parameter| {
+            invalid_span(parameter.span) || type_has_invalid_span(&parameter.annotation)
+        })
+        || type_has_invalid_span(&function.returns)
+        || function.body.iter().any(statement_has_invalid_span)
+}
+
+fn type_has_invalid_span(node: &EcmaTypeNode) -> bool {
+    match node {
+        EcmaTypeNode::Optional { value, .. } => type_has_invalid_span(value),
+        EcmaTypeNode::Unsupported { span, .. } => invalid_span(*span),
+        _ => false,
+    }
+}
+
+fn statement_has_invalid_span(statement: &EcmaStatementNode) -> bool {
+    match statement {
+        EcmaStatementNode::Variable {
+            annotation,
+            value,
+            span,
+            ..
+        } => {
+            invalid_span(*span)
+                || annotation.as_ref().is_some_and(type_has_invalid_span)
+                || expression_has_invalid_span(value)
+        }
+        EcmaStatementNode::Assignment { value, span, .. } => {
+            invalid_span(*span) || expression_has_invalid_span(value)
+        }
+        EcmaStatementNode::Expression { expression, span } => {
+            invalid_span(*span) || expression_has_invalid_span(expression)
+        }
+        EcmaStatementNode::Return { value, span } => {
+            invalid_span(*span) || value.as_ref().is_some_and(expression_has_invalid_span)
+        }
+        EcmaStatementNode::If {
+            condition,
+            then_body,
+            else_body,
+            span,
+        } => {
+            invalid_span(*span)
+                || expression_has_invalid_span(condition)
+                || then_body.iter().any(statement_has_invalid_span)
+                || else_body.iter().any(statement_has_invalid_span)
+        }
+        EcmaStatementNode::While {
+            condition,
+            body,
+            span,
+        } => {
+            invalid_span(*span)
+                || expression_has_invalid_span(condition)
+                || body.iter().any(statement_has_invalid_span)
+        }
+        EcmaStatementNode::Throw { value, span } => {
+            invalid_span(*span) || expression_has_invalid_span(value)
+        }
+        EcmaStatementNode::Try {
+            body,
+            catch_body,
+            finally_body,
+            span,
+        } => {
+            invalid_span(*span)
+                || body.iter().any(statement_has_invalid_span)
+                || catch_body
+                    .as_ref()
+                    .is_some_and(|body| body.iter().any(statement_has_invalid_span))
+                || finally_body
+                    .as_ref()
+                    .is_some_and(|body| body.iter().any(statement_has_invalid_span))
+        }
+        EcmaStatementNode::Unsupported { span, .. } => invalid_span(*span),
+    }
+}
+
+fn expression_has_invalid_span(expression: &EcmaExpressionNode) -> bool {
+    match expression {
+        EcmaExpressionNode::Identifier { span, .. }
+        | EcmaExpressionNode::Undefined { span }
+        | EcmaExpressionNode::Null { span }
+        | EcmaExpressionNode::Boolean { span, .. }
+        | EcmaExpressionNode::Number { span, .. }
+        | EcmaExpressionNode::BigInt { span, .. }
+        | EcmaExpressionNode::String { span, .. }
+        | EcmaExpressionNode::Unsupported { span, .. } => invalid_span(*span),
+        EcmaExpressionNode::Unary { operand, span, .. } => {
+            invalid_span(*span) || expression_has_invalid_span(operand)
+        }
+        EcmaExpressionNode::Binary {
+            left, right, span, ..
+        } => {
+            invalid_span(*span)
+                || expression_has_invalid_span(left)
+                || expression_has_invalid_span(right)
+        }
+        EcmaExpressionNode::Conditional {
+            condition,
+            when_true,
+            when_false,
+            span,
+        } => {
+            invalid_span(*span)
+                || expression_has_invalid_span(condition)
+                || expression_has_invalid_span(when_true)
+                || expression_has_invalid_span(when_false)
+        }
+        EcmaExpressionNode::Call {
+            arguments, span, ..
+        } => invalid_span(*span) || arguments.iter().any(expression_has_invalid_span),
+        EcmaExpressionNode::Property { span, .. } => invalid_span(*span),
+        EcmaExpressionNode::Error { message, span, .. } => {
+            invalid_span(*span)
+                || message
+                    .as_ref()
+                    .is_some_and(|message| expression_has_invalid_span(message))
+        }
+    }
+}
+
+fn invalid_span(span: Utf16SourceSpan) -> bool {
+    span.start > span.end
+}
+
+fn is_sha256(value: &str) -> bool {
+    value.len() == 64 && value.bytes().all(|byte| byte.is_ascii_hexdigit())
 }
 
 #[cfg(test)]
@@ -694,6 +1202,77 @@ mod tests {
         assert!(matches!(
             decode(payload),
             Err(ProtocolError::InvalidSourceHash)
+        ));
+    }
+
+    #[test]
+    fn accepts_distinct_empty_typescript_and_javascript_envelopes() {
+        for (kind, compiler_field, filename) in [
+            ("typescript", "compiler", "empty.ts"),
+            ("javascript", "checker", "empty.js"),
+        ] {
+            let payload = format!(
+                r#"{{
+                    "protocol_version": 1,
+                    "language": {{
+                        "kind": "{kind}",
+                        "{compiler_field}": {{"version": "5.9.3", "installation_sha256": "{HASH}"}},
+                        "runtime": {{"version": [24, 19, 0], "node_api_version": 8}},
+                        "config_sha256": "{HASH}",
+                        "root": {{"items": []}}
+                    }},
+                    "filename": "{filename}",
+                    "source_sha256": "{HASH}"
+                }}"#
+            );
+
+            let envelope =
+                decode(payload.as_bytes()).expect("an empty ECMAScript envelope must be valid");
+            assert!(matches!(
+                envelope.language,
+                SourceLanguage::TypeScript { .. } | SourceLanguage::JavaScript { .. }
+            ));
+        }
+    }
+
+    #[test]
+    fn rejects_invalid_ecmascript_identity_hashes_and_spans() {
+        let invalid_compiler = format!(
+            r#"{{
+                "protocol_version": 1,
+                "language": {{
+                    "kind": "typescript",
+                    "compiler": {{"version": "5.9.3", "installation_sha256": "invalid"}},
+                    "runtime": {{"version": [24, 19, 0], "node_api_version": 8}},
+                    "config_sha256": "{HASH}",
+                    "root": {{"items": []}}
+                }},
+                "filename": "empty.ts",
+                "source_sha256": "{HASH}"
+            }}"#
+        );
+        assert!(matches!(
+            decode(invalid_compiler.as_bytes()),
+            Err(ProtocolError::InvalidCompilerHash)
+        ));
+
+        let invalid_span = format!(
+            r#"{{
+                "protocol_version": 1,
+                "language": {{
+                    "kind": "javascript",
+                    "checker": {{"version": "5.9.3", "installation_sha256": "{HASH}"}},
+                    "runtime": {{"version": [24, 19, 0], "node_api_version": 8}},
+                    "config_sha256": "{HASH}",
+                    "root": {{"items": [{{"kind": "unsupported", "node": "ClassDeclaration", "span": {{"start": 8, "end": 3}}}}]}}
+                }},
+                "filename": "unsupported.js",
+                "source_sha256": "{HASH}"
+            }}"#
+        );
+        assert!(matches!(
+            decode(invalid_span.as_bytes()),
+            Err(ProtocolError::InvalidUtf16Span)
         ));
     }
 }

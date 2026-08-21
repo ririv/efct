@@ -1086,6 +1086,9 @@ impl FunctionAnalyzer<'_> {
                                 PartialBehavior::Diverge => {
                                     unreachable!("exception handlers cannot catch divergence")
                                 }
+                                PartialBehavior::Throw => {
+                                    unreachable!("Python handlers cannot catch JavaScript throw")
+                                }
                             }
                         } else {
                             partial.clone()
@@ -1387,6 +1390,7 @@ fn partial_operation(action: &str, partial: &PartialBehavior) -> String {
         PartialBehavior::RaiseGroup(exception) => {
             format!("{action} exception group leaf {exception}")
         }
+        PartialBehavior::Throw => format!("{action} JavaScript throw"),
         PartialBehavior::Diverge => format!("{action} divergence"),
     }
 }

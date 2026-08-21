@@ -146,6 +146,9 @@ pub fn prepare(envelope: ProtocolEnvelope) -> Result<PreparedModule, String> {
         efct_protocol::SourceLanguage::TypeScript { .. } => {
             return Err("The Python analyzer requires Python source".to_owned());
         }
+        efct_protocol::SourceLanguage::JavaScript { .. } => {
+            return Err("The Python analyzer requires Python source".to_owned());
+        }
     }
     let filename = envelope.filename.clone();
     let imports = module_imports(&envelope)?;

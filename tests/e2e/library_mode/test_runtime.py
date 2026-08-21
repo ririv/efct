@@ -73,6 +73,31 @@ def reject(value: int) -> None:
     assert result.returncode == 0, result.stderr
 
 
+def test_imported_efct_markers_verify_at_import(tmp_path: Path) -> None:
+    result = _run_module(
+        tmp_path,
+        "imported_marker_module",
+        """from efct import effect, effects, partial, pure
+
+@pure()
+def increment(value: int) -> int:
+    return value + 1
+
+@effects(
+    effect.Console(),
+    partial.Raise(OSError),
+    partial.Raise(ValueError),
+)
+def show(value: int) -> None:
+    print(increment(value))
+""",
+        "import imported_marker_module as module; module.show(1)",
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "2\n"
+
+
 def test_bounded_pure_partial_declaration_verifies_at_import(tmp_path: Path) -> None:
     result = _run_module(
         tmp_path,

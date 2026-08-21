@@ -199,6 +199,11 @@ pub(super) fn parse_declared_effects(
                                 Effect::Partial(PartialBehavior::Diverge) => {
                                     unreachable!("diverge does not carry an exception")
                                 }
+                                Effect::Partial(PartialBehavior::Throw) => {
+                                    unreachable!(
+                                        "JavaScript throw does not carry a Python exception"
+                                    )
+                                }
                                 Effect::External(_) => {
                                     unreachable!("raised_exception only returns partial behavior")
                                 }

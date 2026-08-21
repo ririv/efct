@@ -9,5 +9,6 @@ rust-version.workspace = true
 
 [dependencies]
 efct-language-python.workspace = true
+efct-language-typescript.workspace = true
 efct-model.workspace = true
 efct-protocol.workspace = true

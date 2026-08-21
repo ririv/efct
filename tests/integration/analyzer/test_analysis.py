@@ -56,6 +56,62 @@ def reject(value: int) -> None:
     assert _diagnostics(source) == []
 
 
+def test_accepts_efct_symbols_imported_with_explicit_aliases() -> None:
+    source = """from efct import effect as effect_model
+from efct import effects as verified_effects
+from efct import partial as partial_model
+from efct import pure as verified_pure
+
+_efct = verified_effects(
+    effect_model.Console(),
+    partial_model.Raise(OSError),
+    partial_model.Raise(ValueError),
+)
+
+@verified_pure()
+def increment(value: int) -> int:
+    return value + 1
+
+@verified_effects(
+    effect_model.Console(),
+    partial_model.Raise(OSError),
+    partial_model.Raise(ValueError),
+)
+def show(value: int) -> None:
+    print(increment(value))
+
+show(1)
+"""
+
+    assert _diagnostics(source) == []
+
+
+def test_rejects_unimported_bare_efct_marker() -> None:
+    source = """@pure
+def increment(value: int) -> int:
+    return value + 1
+"""
+
+    diagnostic = next(item for item in _diagnostics(source) if item["code"] == "P1006")
+    assert diagnostic["message"] == (
+        "Only @efct.pure(...), @efct.effects, or @efct.effects(...) markers are allowed"
+    )
+
+
+def test_rejects_efct_name_not_bound_by_aliased_import() -> None:
+    source = """import efct as verified
+
+@efct.pure
+def increment(value: int) -> int:
+    return value + 1
+"""
+
+    diagnostic = next(item for item in _diagnostics(source) if item["code"] == "P1006")
+    assert diagnostic["message"] == (
+        "Only @efct.pure(...), @efct.effects, or @efct.effects(...) markers are allowed"
+    )
+
+
 def test_inferred_pure_accepts_and_propagates_partial_behavior() -> None:
     source = """import efct
 

@@ -53,6 +53,7 @@ impl fmt::Display for ExceptionIdError {
 pub enum PartialBehavior {
     Raise(ExceptionId),
     RaiseGroup(ExceptionId),
+    Throw,
     Diverge,
 }
 
@@ -251,7 +252,8 @@ impl Effect {
             Self::Partial(
                 PartialBehavior::Raise(exception) | PartialBehavior::RaiseGroup(exception),
             ) => Some(exception),
-            Self::Partial(PartialBehavior::Diverge) | Self::External(_) => None,
+            Self::Partial(PartialBehavior::Throw | PartialBehavior::Diverge)
+            | Self::External(_) => None,
         }
     }
 
@@ -268,6 +270,7 @@ impl Effect {
             "global.read" => Ok(ExternalEffect::GlobalRead.into()),
             "global.write" => Ok(ExternalEffect::GlobalWrite.into()),
             "unsafe" => Ok(ExternalEffect::Unsafe.into()),
+            "throw" => Ok(Self::Partial(PartialBehavior::Throw)),
             "diverge" => Ok(Self::Partial(PartialBehavior::Diverge)),
             _ if value.starts_with("raise-group:") => {
                 let exception = value
@@ -332,6 +335,7 @@ impl fmt::Display for PartialBehavior {
         match self {
             Self::Raise(exception) => write!(formatter, "raise:{exception}"),
             Self::RaiseGroup(exception) => write!(formatter, "raise-group:{exception}"),
+            Self::Throw => formatter.write_str("throw"),
             Self::Diverge => formatter.write_str("diverge"),
         }
     }
@@ -386,6 +390,10 @@ mod tests {
             Ok(Effect::Partial(PartialBehavior::RaiseGroup(
                 ExceptionId::parse("builtins.ValueError").unwrap()
             )))
+        );
+        assert_eq!(
+            Effect::parse("throw"),
+            Ok(Effect::Partial(PartialBehavior::Throw))
         );
         assert_eq!(
             Effect::parse("diverge"),

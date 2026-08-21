@@ -1,0 +1,21 @@
+[package]
+name = "efct-napi"
+description = "Thin Node-API exports for Efct"
+publish = false
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+efct-core.workspace = true
+efct-protocol.workspace = true
+napi.workspace = true
+napi-derive.workspace = true
+serde_json.workspace = true
+
+[build-dependencies]
+napi-build = "=2.2.4"

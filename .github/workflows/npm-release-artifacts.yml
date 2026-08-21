@@ -1,0 +1,253 @@
+name: Build npm release artifacts
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    name: Node-API / ${{ matrix.platform }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: darwin-arm64
+            runner: macos-15
+            artifact: libefct_napi.dylib
+          - platform: darwin-x64
+            runner: macos-15-intel
+            artifact: libefct_napi.dylib
+          - platform: linux-arm64
+            runner: ubuntu-24.04-arm
+            artifact: libefct_napi.so
+          - platform: linux-x64
+            runner: ubuntu-24.04
+            artifact: libefct_napi.so
+          - platform: win32-x64
+            runner: windows-2025
+            artifact: efct_napi.dll
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Remove build-machine paths from Rust artifacts
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+
+          roots = {
+              str(Path.cwd()): ".",
+              str(Path.home()): "rust-home",
+              "/github/home": "runner-home",
+              "/github/workspace": ".",
+              "/io": ".",
+              "/root": "rust-home",
+          }
+          for variable in ("GITHUB_WORKSPACE", "RUNNER_TEMP", "RUNNER_WORKSPACE"):
+              value = os.environ.get(variable)
+              if value:
+                  roots[value] = variable.lower().replace("_", "-")
+          flags = " ".join(
+              f"--remap-path-prefix={source}={target}"
+              for source, target in roots.items()
+          )
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as environment:
+              environment.write(f"RUSTFLAGS={flags}\n")
+          PY
+
+      - name: Build Node-API verifier
+        run: cargo build --package efct-napi --release --locked
+
+      - name: Stage Node-API verifier
+        shell: bash
+        env:
+          ARTIFACT: ${{ matrix.artifact }}
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          mkdir native
+          destination="native/efct-napi.$PLATFORM.node"
+          cp "target/release/$ARTIFACT" "$destination"
+          if [[ "$PLATFORM" == darwin-* ]]; then
+            install_name_tool -id "@rpath/efct-napi.$PLATFORM.node" "$destination"
+          fi
+
+      - name: Upload Node-API verifier
+        uses: actions/upload-artifact@v4
+        with:
+          name: napi-${{ matrix.platform }}
+          path: native/*.node
+          if-no-files-found: error
+
+  package:
+    name: npm package
+    needs: native
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Install Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24.19.0"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download Node-API verifiers
+        uses: actions/download-artifact@v4
+        with:
+          pattern: napi-*
+          path: js/efct/native
+          merge-multiple: true
+
+      - name: Build JavaScript package
+        run: ./node_modules/.bin/tsc --project js/efct/tsconfig.json
+
+      - name: Verify package contents
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import re
+          import subprocess
+          from pathlib import Path
+
+          expected = {
+              "native/efct-napi.darwin-arm64.node",
+              "native/efct-napi.darwin-x64.node",
+              "native/efct-napi.linux-arm64.node",
+              "native/efct-napi.linux-x64.node",
+              "native/efct-napi.win32-x64.node",
+          }
+          result = subprocess.run(
+              ["npm", "pack", "--workspace", "efct", "--dry-run", "--json"],
+              check=True,
+              capture_output=True,
+              text=True,
+          )
+          package = json.loads(result.stdout)[0]
+          files = {entry["path"] for entry in package["files"]}
+          missing = sorted(expected - files)
+          if missing:
+              raise SystemExit(f"npm package is missing native binaries: {missing}")
+          forbidden = [
+              path for path in files
+              if path.startswith("dist/tests/")
+              or path.startswith("internal-docs/")
+              or path == "AGENTS.md"
+          ]
+          if forbidden:
+              raise SystemExit(f"npm package contains private or test files: {forbidden}")
+          if package["name"] != "efct" or package["version"] != "0.1.0":
+              raise SystemExit(f"unexpected npm identity: {package['name']} {package['version']}")
+          path_patterns = [
+              re.compile(rb"/Users/[A-Za-z0-9._-]+/"),
+              re.compile(rb"/home/[A-Za-z0-9._-]+/"),
+              re.compile(rb"[A-Za-z]:[\\/]Users[\\/][A-Za-z0-9._-]+[\\/]"),
+          ]
+          leaks = []
+          for path in sorted(Path("js/efct/native").glob("*.node")):
+              payload = path.read_bytes()
+              if any(pattern.search(payload) for pattern in path_patterns):
+                  leaks.append(path.name)
+          if leaks:
+              raise SystemExit(f"Node-API binaries contain build-machine paths: {leaks}")
+          PY
+
+      - name: Pack npm candidate
+        run: mkdir npm-dist && npm pack --workspace efct --pack-destination npm-dist
+
+      - name: Generate checksum
+        run: cd npm-dist && sha256sum efct-*.tgz > SHA256SUMS
+
+      - name: Upload npm candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-package
+          path: npm-dist/
+          if-no-files-found: error
+
+  install:
+    name: Install npm candidate / ${{ matrix.platform }}
+    needs: package
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: darwin-arm64
+            runner: macos-15
+          - platform: darwin-x64
+            runner: macos-15-intel
+          - platform: linux-arm64
+            runner: ubuntu-24.04-arm
+          - platform: linux-x64
+            runner: ubuntu-24.04
+          - platform: win32-x64
+            runner: windows-2025
+    steps:
+      - name: Install Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24.19.0"
+
+      - name: Download npm candidate
+        uses: actions/download-artifact@v4
+        with:
+          name: npm-package
+          path: candidate
+
+      - name: Verify and install npm candidate
+        shell: bash
+        run: |
+          cd candidate
+          sha256sum --check SHA256SUMS
+          cd ..
+          mkdir isolated
+          cd isolated
+          npm init --yes
+          npm install --ignore-scripts ../candidate/efct-*.tgz
+
+      - name: Create accepted JavaScript project
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          Path("isolated/package.json").write_text(
+              '{"private":true,"type":"module"}\n',
+              encoding="utf-8",
+          )
+          source = (
+              'import { defineModule, pure } from "efct";\n\n'
+              'export const { add } = defineModule(import.meta.url, {\n'
+              '  add: pure()(\n'
+              '    /**\n'
+              '     * @param {number} left\n'
+              '     * @param {number} right\n'
+              '     * @returns {number}\n'
+              '     */\n'
+              '    function add(left, right) {\n'
+              '      return left + right;\n'
+              '    },\n'
+              '  ),\n'
+              '});\n'
+          )
+          Path("isolated/example.js").write_text(source, encoding="utf-8")
+          PY
+
+      - name: Check and run installed package
+        working-directory: isolated
+        run: |
+          npx efct check example.js
+          npx efct run example.js --call add --args "[20,22]"

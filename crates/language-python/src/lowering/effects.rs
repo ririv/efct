@@ -1,8 +1,8 @@
 use efct_protocol::{ConstantValue, ExpressionNode};
 
-use crate::hir::{DeclarationNotation, DeclarationValue};
+use crate::hir::{DeclarationNotation, DeclarationValue, Import};
 
-use super::LoweringContext;
+use super::{LoweringContext, canonical_efct_name};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum DeclarationKind {
@@ -15,12 +15,15 @@ impl LoweringContext {
         &mut self,
         arguments: Vec<ExpressionNode>,
         function: Option<&str>,
+        imports: &[Import],
     ) -> Option<Vec<DeclarationValue>> {
         let mut effects = Vec::with_capacity(arguments.len());
         let mut notation = None;
         for argument in arguments {
             let span = argument.span();
-            let Some((effect, current_notation, _)) = lower_declaration_argument(&argument) else {
+            let Some((effect, current_notation, _)) =
+                lower_declaration_argument(&argument, imports)
+            else {
                 self.error(
                     "P1006",
                     Some(span),
@@ -51,12 +54,14 @@ impl LoweringContext {
         &mut self,
         arguments: Vec<ExpressionNode>,
         function: Option<&str>,
+        imports: &[Import],
     ) -> Option<Vec<DeclarationValue>> {
         let mut partials = Vec::with_capacity(arguments.len());
         let mut notation = None;
         for argument in arguments {
             let span = argument.span();
-            let Some((partial, current_notation, kind)) = lower_declaration_argument(&argument)
+            let Some((partial, current_notation, kind)) =
+                lower_declaration_argument(&argument, imports)
             else {
                 self.error(
                     "P1006",
@@ -96,6 +101,7 @@ impl LoweringContext {
 
 fn lower_declaration_argument(
     argument: &ExpressionNode,
+    imports: &[Import],
 ) -> Option<(String, DeclarationNotation, DeclarationKind)> {
     if let ExpressionNode::Constant {
         value: ConstantValue::Str(effect),
@@ -126,10 +132,8 @@ fn lower_declaration_argument(
         return None;
     }
 
-    let qualified_callee = qualified_name(callee)?;
-    let external_constructor = qualified_callee
-        .strip_prefix("efct.effect.")
-        .or_else(|| qualified_callee.strip_prefix("effect."));
+    let qualified_callee = canonical_efct_name(callee, imports)?;
+    let external_constructor = qualified_callee.strip_prefix("effect.");
     let unit_name = match external_constructor {
         Some("Console") => Some("console"),
         Some("File.Read") => Some("file.read"),
@@ -154,9 +158,7 @@ fn lower_declaration_argument(
         });
     }
 
-    let partial_constructor = qualified_callee
-        .strip_prefix("efct.partial.")
-        .or_else(|| qualified_callee.strip_prefix("partial."));
+    let partial_constructor = qualified_callee.strip_prefix("partial.");
     if partial_constructor == Some("Diverge") && arguments.is_empty() {
         return Some((
             "diverge".to_owned(),

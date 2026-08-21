@@ -1,6 +1,6 @@
 use efct_protocol::{ExpressionNode, StatementNode};
 
-use super::{LoweringContext, is_qualified_name};
+use super::LoweringContext;
 use crate::hir::{FunctionDeclaration, Import, MODULE_INITIALIZER_NAME, Statement};
 
 pub(super) enum ClassifiedModuleStatement {
@@ -16,6 +16,7 @@ impl LoweringContext {
     pub(super) fn classify_module_statement(
         &mut self,
         statement: StatementNode,
+        imports: &[Import],
     ) -> ClassifiedModuleStatement {
         let StatementNode::Assign {
             targets,
@@ -57,7 +58,7 @@ impl LoweringContext {
             );
             return ClassifiedModuleStatement::InvalidContract;
         }
-        let Some(declaration) = lower_module_declaration(value, self, span) else {
+        let Some(declaration) = lower_module_declaration(value, self, span, imports) else {
             return ClassifiedModuleStatement::InvalidContract;
         };
         ClassifiedModuleStatement::Contract { declaration, span }
@@ -95,8 +96,9 @@ fn lower_module_declaration(
     expression: ExpressionNode,
     context: &mut LoweringContext,
     span: efct_protocol::SourceSpan,
+    imports: &[Import],
 ) -> Option<FunctionDeclaration> {
-    if is_qualified_name(&expression, &["efct", "pure"]) {
+    if super::is_efct_name(&expression, "pure", imports) {
         return Some(FunctionDeclaration::InferredPure);
     }
     if let ExpressionNode::Call {
@@ -107,11 +109,11 @@ fn lower_module_declaration(
     } = expression
         && keywords.is_empty()
     {
-        if is_qualified_name(&callee, &["efct", "pure"]) {
-            let partials = context.lower_partial_arguments(arguments, None)?;
+        if super::is_efct_name(&callee, "pure", imports) {
+            let partials = context.lower_partial_arguments(arguments, None, imports)?;
             return Some(FunctionDeclaration::BoundedPure(partials));
         }
-        if !is_qualified_name(&callee, &["efct", "effects"]) {
+        if !super::is_efct_name(&callee, "effects", imports) {
             context.error(
                 "P1006",
                 Some(span),
@@ -129,7 +131,7 @@ fn lower_module_declaration(
             );
             return None;
         }
-        let effects = context.lower_effect_arguments(arguments, None)?;
+        let effects = context.lower_effect_arguments(arguments, None, imports)?;
         return Some(FunctionDeclaration::BoundedEffects(effects));
     }
     context.error(

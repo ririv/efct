@@ -354,14 +354,13 @@ fn flatten_modules(modules: BTreeMap<String, Module>) -> Module {
             flattened.filename.clone_from(&module.filename);
             flattened.source_sha256.clone_from(&module.source_sha256);
         }
-        if module
+        if module.imports.iter().any(|item| {
+            matches!(item, Import::Module { path, .. } if path == "efct")
+                || matches!(item, Import::Symbol { module, .. } if module == "efct")
+        }) && !flattened
             .imports
             .iter()
-            .any(|item| matches!(item, Import::Module { path, binding, .. } if path == "efct" && binding == "efct"))
-            && !flattened
-                .imports
-                .iter()
-                .any(|item| matches!(item, Import::Module { path, .. } if path == "efct"))
+            .any(|item| matches!(item, Import::Module { path, .. } if path == "efct"))
         {
             flattened.imports.push(Import::Module {
                 path: "efct".to_owned(),

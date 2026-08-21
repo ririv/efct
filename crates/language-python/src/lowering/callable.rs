@@ -1,7 +1,7 @@
 use efct_protocol::{ArgumentsNode, ExpressionNode};
 
-use super::{LoweringContext, is_qualified_name};
-use crate::hir::{EffectParameter, FunctionDeclaration, Parameter};
+use super::{LoweringContext, is_efct_name};
+use crate::hir::{EffectParameter, FunctionDeclaration, Import, Parameter};
 
 impl LoweringContext {
     pub(super) fn lower_declaration(
@@ -9,6 +9,7 @@ impl LoweringContext {
         decorators: Vec<ExpressionNode>,
         function: &str,
         span: efct_protocol::SourceSpan,
+        imports: &[Import],
     ) -> Option<FunctionDeclaration> {
         if decorators.len() != 1 {
             self.error(
@@ -20,10 +21,10 @@ impl LoweringContext {
             return None;
         }
         let decorator = decorators.into_iter().next()?;
-        if is_qualified_name(&decorator, &["efct", "pure"]) {
+        if is_efct_name(&decorator, "pure", imports) {
             return Some(FunctionDeclaration::InferredPure);
         }
-        if is_qualified_name(&decorator, &["efct", "effects"]) {
+        if is_efct_name(&decorator, "effects", imports) {
             return Some(FunctionDeclaration::InferredEffects);
         }
         if let ExpressionNode::Call {
@@ -33,12 +34,12 @@ impl LoweringContext {
             ..
         } = decorator
         {
-            if is_qualified_name(&callee, &["efct", "pure"]) && keywords.is_empty() {
-                let partials = self.lower_partial_arguments(arguments, Some(function))?;
+            if is_efct_name(&callee, "pure", imports) && keywords.is_empty() {
+                let partials = self.lower_partial_arguments(arguments, Some(function), imports)?;
                 return Some(FunctionDeclaration::BoundedPure(partials));
             }
-            if is_qualified_name(&callee, &["efct", "effects"]) && keywords.is_empty() {
-                let effects = self.lower_effect_arguments(arguments, Some(function))?;
+            if is_efct_name(&callee, "effects", imports) && keywords.is_empty() {
+                let effects = self.lower_effect_arguments(arguments, Some(function), imports)?;
                 return Some(FunctionDeclaration::BoundedEffects(effects));
             }
         }
@@ -55,6 +56,7 @@ impl LoweringContext {
         &mut self,
         parameters: Vec<efct_protocol::TypeParameterNode>,
         function: &str,
+        imports: &[Import],
     ) -> Option<Vec<EffectParameter>> {
         let mut lowered = Vec::with_capacity(parameters.len());
         let mut names = std::collections::BTreeSet::new();
@@ -92,7 +94,7 @@ impl LoweringContext {
                 );
                 return None;
             };
-            if !is_qualified_name(&bound, &["efct", "EffectSet"]) {
+            if !is_efct_name(&bound, "EffectSet", imports) {
                 self.error(
                     "P1104",
                     Some(bound.span()),

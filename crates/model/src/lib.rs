@@ -24,9 +24,30 @@ pub enum LanguageIdentity {
         implementation: PythonImplementation,
         version: [u8; 3],
     },
+    #[serde(rename = "typescript")]
     TypeScript {
-        compiler_version: String,
+        compiler: TypeScriptCompilerIdentity,
+        runtime: NodeRuntimeIdentity,
     },
+    #[serde(rename = "javascript")]
+    JavaScript {
+        checker: TypeScriptCompilerIdentity,
+        runtime: NodeRuntimeIdentity,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TypeScriptCompilerIdentity {
+    pub version: String,
+    pub installation_sha256: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct NodeRuntimeIdentity {
+    pub version: [u16; 3],
+    pub node_api_version: u32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

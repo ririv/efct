@@ -1,5 +1,7 @@
+import importlib.metadata
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from efct.cli import main
@@ -290,6 +292,7 @@ reason = "not audited"
 def test_audited_boundary_rejects_editable_distribution(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _write_empty_module(tmp_path)
     version, installation_hash = installation_fingerprint("efct")
@@ -311,6 +314,23 @@ effects = []
 partials = []
 """,
         encoding="utf-8",
+    )
+
+    installed_distribution = importlib.metadata.distribution("efct")
+
+    class EditableDistribution:
+        origin = SimpleNamespace(dir_info=SimpleNamespace(editable=True))
+
+        def __getattr__(self, name: str) -> object:
+            return getattr(installed_distribution, name)
+
+    original_distribution = importlib.metadata.distribution
+    monkeypatch.setattr(
+        importlib.metadata,
+        "distribution",
+        lambda name: (
+            EditableDistribution() if name == "efct" else original_distribution(name)
+        ),
     )
 
     assert main(["check", str(tmp_path)]) == 2

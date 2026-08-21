@@ -559,7 +559,7 @@ impl FunctionAnalyzer<'_> {
                             leaves.extend(partials.iter().filter_map(|partial| match partial {
                                 PartialBehavior::Raise(exception)
                                 | PartialBehavior::RaiseGroup(exception) => Some(exception.clone()),
-                                PartialBehavior::Diverge => None,
+                                PartialBehavior::Throw | PartialBehavior::Diverge => None,
                             }));
                         }
                         _ => {

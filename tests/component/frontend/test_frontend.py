@@ -163,15 +163,30 @@ def test_type_ignore_enters_protocol() -> None:
     assert root["items"][-1]["tag"] == "[name-defined]"
 
 
-def test_recognized_but_disabled_typescript_language_is_rejected() -> None:
+def test_empty_typescript_language_envelope_is_accepted() -> None:
     payload = json.dumps(
         {
             "protocol_version": 1,
             "filename": "app.ts",
             "source_sha256": "a" * 64,
             "language": {
-                "kind": "type_script",
-                "compiler_version": "6.0.0",
+                "kind": "typescript",
+                "compiler": {
+                    "version": "5.9.3",
+                    "installation_sha256": (
+                        "dbbb9b146d378d9d62aa73396b76d5ea"
+                        "0c9eba8945f3a9229aad56862fc1ebd0"
+                    ),
+                },
+                "runtime": {
+                    "version": [24, 19, 0],
+                    "node_api_version": 8,
+                },
+                "config_sha256": (
+                    "77d10f1faef9a270bb496dfc6011e207"
+                    "3b8655cba4c6f4baa477fa7f79928ebf"
+                ),
+                "root": {"items": []},
             },
         },
         separators=(",", ":"),
@@ -179,7 +194,7 @@ def test_recognized_but_disabled_typescript_language_is_rejected() -> None:
 
     diagnostics = json.loads(_core.check_ast(payload))
 
-    assert diagnostics[0]["code"] == "P0002"
+    assert diagnostics == []
 
 
 def test_exception_handlers_use_tagged_union_encoding() -> None:

@@ -1,0 +1,49 @@
+{
+  "name": "efct",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Static purity, effect, and partiality verification for TypeScript and JavaScript",
+  "license": "MIT",
+  "author": "ririv",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ririv/efct.git"
+  },
+  "homepage": "https://github.com/ririv/efct#readme",
+  "bugs": "https://github.com/ririv/efct/issues",
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "effect-system",
+    "purity",
+    "static-analysis",
+    "typescript",
+    "verification"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./dist/src/index.js"
+  },
+  "types": "./dist/src/index.d.ts",
+  "bin": {
+    "efct": "./dist/src/cli.js"
+  },
+  "files": [
+    "dist/src",
+    "native",
+    "README.zh-CN.md"
+  ],
+  "dependencies": {
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": "24.19.0"
+  },
+  "scripts": {
+    "build": "npm run build:native && tsc --project tsconfig.json",
+    "build:native": "cargo build --manifest-path ../../Cargo.toml --package efct-napi --release && node scripts/install-native.mjs",
+    "check": "tsc --project tsconfig.json --noEmit",
+    "test": "npm run build && node --test dist/tests/*.test.js"
+  }
+}

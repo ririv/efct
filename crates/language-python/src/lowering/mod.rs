@@ -63,7 +63,7 @@ pub fn lower(envelope: ProtocolEnvelope) -> Result<Module, Vec<Diagnostic>> {
 
     let mut initializer_statements = Vec::new();
     for statement in module_statements {
-        match context.classify_module_statement(statement) {
+        match context.classify_module_statement(statement, &module.imports) {
             ClassifiedModuleStatement::Contract { declaration, span } => {
                 if module_declaration.replace((declaration, span)).is_some() {
                     context.error(
@@ -243,10 +243,13 @@ impl LoweringContext {
                     );
                     return;
                 }
-                let Some(declaration) = self.lower_declaration(decorators, &name, span) else {
+                let Some(declaration) =
+                    self.lower_declaration(decorators, &name, span, &module.imports)
+                else {
                     return;
                 };
-                let Some(effect_parameters) = self.lower_effect_parameters(type_parameters, &name)
+                let Some(effect_parameters) =
+                    self.lower_effect_parameters(type_parameters, &name, &module.imports)
                 else {
                     return;
                 };
@@ -337,7 +340,7 @@ impl LoweringContext {
                     );
                     return;
                 }
-                if !is_pure_record_decorators(&decorators) {
+                if !is_pure_record_decorators(&decorators, &module.imports) {
                     self.error(
                         "P1201",
                         Some(span),
@@ -582,8 +585,8 @@ impl LoweringContext {
     }
 }
 
-fn is_pure_record_decorators(decorators: &[ExpressionNode]) -> bool {
-    if decorators.len() != 2 || !is_qualified_name(&decorators[0], &["efct", "pure"]) {
+fn is_pure_record_decorators(decorators: &[ExpressionNode], imports: &[Import]) -> bool {
+    if decorators.len() != 2 || !is_efct_name(&decorators[0], "pure", imports) {
         return false;
     }
     let ExpressionNode::Call {
@@ -626,5 +629,42 @@ fn is_qualified_name(expression: &ExpressionNode, segments: &[&str]) -> bool {
                 if attribute == name && is_qualified_name(value, prefix)
         ),
         [] => false,
+    }
+}
+
+fn is_efct_name(expression: &ExpressionNode, name: &str, imports: &[Import]) -> bool {
+    canonical_efct_name(expression, imports).as_deref() == Some(name)
+}
+
+fn canonical_efct_name(expression: &ExpressionNode, imports: &[Import]) -> Option<String> {
+    let lexical = expression_qualified_name(expression)?;
+    let (root, suffix) = lexical
+        .split_once('.')
+        .map_or((lexical.as_str(), ""), |(root, suffix)| (root, suffix));
+    imports.iter().find_map(|import| match import {
+        Import::Module { path, binding, .. } if path == "efct" && binding == root => {
+            Some(suffix.to_owned())
+        }
+        Import::Symbol {
+            module,
+            name,
+            binding,
+            ..
+        } if module == "efct" && binding == root => Some(if suffix.is_empty() {
+            name.clone()
+        } else {
+            format!("{name}.{suffix}")
+        }),
+        _ => None,
+    })
+}
+
+fn expression_qualified_name(expression: &ExpressionNode) -> Option<String> {
+    match expression {
+        ExpressionNode::Name { identifier, .. } => Some(identifier.clone()),
+        ExpressionNode::Attribute { value, name, .. } => {
+            Some(format!("{}.{}", expression_qualified_name(value)?, name))
+        }
+        _ => None,
     }
 }

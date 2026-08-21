@@ -28,13 +28,13 @@ efct --version
 
 ## Quick start
 
-Decorate a function with `@efct.pure`:
+Import the small public API directly and decorate a function with `@pure`:
 
 ```python
-import efct
+from efct import pure
 
 
-@efct.pure
+@pure
 def add(left: int, right: int) -> int:
     return left + right
 
@@ -52,6 +52,10 @@ efct check src/
 ```
 
 Efct rejects unknown syntax, unknown calls, mutable values crossing function boundaries, and behavior outside a declared effect bound. It never treats unverified code as pure.
+
+## Examples
+
+The [checkout policy example](https://github.com/ririv/efct/tree/main/examples/checkout) is a runnable small program that separates environment and clock access from deterministic invoice calculation. The [diagnostic examples](https://github.com/ririv/efct/tree/main/examples/diagnostics) pair five rejected programs with corrected versions for hidden file access, nondeterminism, exceptions, uncertified dependencies, and nontermination.
 
 ## Pure functions and partial behavior
 
