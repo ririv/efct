@@ -2,9 +2,19 @@
 
 [English](https://github.com/ririv/efct/blob/main/README.md)
 
-Efct 是面向一个封闭、可审计 Python 子集的静态效果与纯函数验证器。它检查函数可能观察、修改、抛出或无法正常返回的行为，并拒绝无法证明安全的代码。
+Efct 是面向 Python、TypeScript 与 JavaScript 封闭可审计子集的静态效果与纯函数验证器。它检查函数可能观察、修改、抛出或无法正常返回的行为，并拒绝无法证明安全的代码。
 
-Efct 目前处于 Alpha 阶段，支持 CPython 3.13 和 3.14。
+Efct 目前处于 Alpha 阶段。不同语言前端共用相同的效果模型与失败关闭原则，但每种语言都有各自明确受限的认证子集。
+
+## 语言支持
+
+| 语言 | 运行时与模块系统 | 软件包 |
+| --- | --- | --- |
+| Python | CPython 3.13 和 3.14 | [`efct`](https://pypi.org/project/efct/) |
+| TypeScript | Node.js 24.19.0、TypeScript 5.9.3、ESM | [`@efct/efct`](https://www.npmjs.com/package/@efct/efct) |
+| JavaScript | Node.js 24.19.0、经过检查的 `.js`/`.mjs`、ESM | [`@efct/efct`](https://www.npmjs.com/package/@efct/efct) |
+
+TypeScript 与 JavaScript 共用同一个验证器。当前认证子集和运行时要求详见 [Efct TypeScript 与 JavaScript 支持](https://github.com/ririv/efct/blob/main/js/efct/README.zh-CN.md)。
 
 ## 安装
 
@@ -52,6 +62,35 @@ efct check src/
 ```
 
 Efct 会拒绝未知语法、未知调用、跨函数边界的可变值，以及超出声明上界的行为，不会把未经验证的代码当作纯代码。
+
+## TypeScript 与 JavaScript
+
+安装 Node 软件包：
+
+```console
+npm install @efct/efct
+```
+
+定义一个具有显式纯度契约的导出函数：
+
+```ts
+import { defineModule, pure } from "@efct/efct";
+
+export const { add } = defineModule(import.meta.url, {
+  add: pure()(function add(left: number, right: number): number {
+    return left + right;
+  }),
+});
+```
+
+然后通过 Efct 检查或运行：
+
+```console
+npx efct check src/math.ts
+npx efct run src/math.ts --call add --args '[20, 22]'
+```
+
+同一个前端也会通过 TypeScript 的 JavaScript 检查模型验证 `.js` 和 `.mjs` ESM 文件。效果声明、partial 行为、支持语法和精确的 0.1 边界详见 [TypeScript 与 JavaScript 指南](https://github.com/ririv/efct/blob/main/js/efct/README.zh-CN.md)。
 
 ## 示例
 

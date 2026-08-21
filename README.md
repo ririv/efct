@@ -2,9 +2,19 @@
 
 [简体中文](https://github.com/ririv/efct/blob/main/README.zh-CN.md)
 
-Efct is a static effect and pure-function verifier for a closed, auditable subset of Python. It checks what a function can observe, change, raise, or fail to return from, and rejects code it cannot prove safe.
+Efct is a static effect and pure-function verifier for closed, auditable subsets of Python, TypeScript, and JavaScript. It checks what a function can observe, change, throw, or fail to return from, and rejects code it cannot prove safe.
 
-Efct is currently alpha software. It supports CPython 3.13 and 3.14.
+Efct is currently alpha software. Language frontends share the same effect model and fail-closed policy, while each language has its own deliberately limited certified subset.
+
+## Language support
+
+| Language | Runtime and module system | Package |
+| --- | --- | --- |
+| Python | CPython 3.13 and 3.14 | [`efct`](https://pypi.org/project/efct/) |
+| TypeScript | Node.js 24.19.0, TypeScript 5.9.3, ESM | [`@efct/efct`](https://www.npmjs.com/package/@efct/efct) |
+| JavaScript | Node.js 24.19.0, checked `.js`/`.mjs`, ESM | [`@efct/efct`](https://www.npmjs.com/package/@efct/efct) |
+
+TypeScript and JavaScript use the same verifier. Their current certified subset and runtime requirements are documented in [Efct for TypeScript and JavaScript](https://github.com/ririv/efct/blob/main/js/efct/README.md).
 
 ## Installation
 
@@ -52,6 +62,35 @@ efct check src/
 ```
 
 Efct rejects unknown syntax, unknown calls, mutable values crossing function boundaries, and behavior outside a declared effect bound. It never treats unverified code as pure.
+
+## TypeScript and JavaScript
+
+Install the Node package:
+
+```console
+npm install @efct/efct
+```
+
+Define an explicitly pure exported function:
+
+```ts
+import { defineModule, pure } from "@efct/efct";
+
+export const { add } = defineModule(import.meta.url, {
+  add: pure()(function add(left: number, right: number): number {
+    return left + right;
+  }),
+});
+```
+
+Then check or run it through Efct:
+
+```console
+npx efct check src/math.ts
+npx efct run src/math.ts --call add --args '[20, 22]'
+```
+
+The same frontend checks ESM JavaScript in `.js` and `.mjs` files through TypeScript's checked-JavaScript model. See the [TypeScript and JavaScript guide](https://github.com/ririv/efct/blob/main/js/efct/README.md) for effect declarations, partial behavior, supported syntax, and the exact 0.1 boundary.
 
 ## Examples
 
